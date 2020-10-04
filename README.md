@@ -5,7 +5,7 @@
 
 ## Less Janky Grasshopper Components
 
-See the companion blog post about the rationale behind this approach. This repo demonstrates how to create an eager and responsive async component that does not block the Grasshopper UI thread while doing heavy work in the background, reports on progress and - theoretically - makes your life easier. 
+See the [companion blog post](https://speckle.systems/blog/async-gh/) about the rationale behind this approach. This repo demonstrates how to create an eager and responsive async component that does not block the Grasshopper UI thread while doing heavy work in the background, reports on progress and - theoretically - makes your life easier. 
 
 We're not so sure about the last part! We've put this repo out in the hope that others will find something useful inside - even just inspiration for the approach.
 
@@ -18,7 +18,7 @@ Looks nice, doesn't it? Notice that the solution runs "eagerly" - every time the
 
 ### Approach
 
-Provides an abstract `GH_AsyncComponent` which you can inherit from to scaffold your own async component. There's more info in the blogpost on how to go about it.
+Provides an abstract `GH_AsyncComponent` which you can inherit from to scaffold your own async component. There's more info in the [blogpost](https://speckle.systems/blog/async-gh/) on how to go about it.
 
 Even better, there's a [sample component that shows how an implementation could look like](https://github.com/specklesystems/GrasshopperAsyncComponent/blob/cf889e7f2c15f5fd90553000977a2da55aae0ab8/GrasshopperAsyncComponent/SampleImplementations/SampleAsyncComponent.cs#L11-L77)!
 
