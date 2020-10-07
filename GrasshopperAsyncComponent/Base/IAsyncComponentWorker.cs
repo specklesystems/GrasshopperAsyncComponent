@@ -39,6 +39,21 @@ namespace GrasshopperAsyncComponent
     /// <param name="ReportError">Call this to report a warning or an error.</param>
     /// <param name="Done">When you are done computing, call this function to have the parent component invoke the SetData function.</param>
     void DoWork(CancellationToken token, Action<string> ReportProgress, Action<string, GH_RuntimeMessageLevel> ReportError, Action Done);
-
   }
+
+  public abstract class WorkerInstance
+  {
+    public CancellationToken CancellationToken { get; set; }
+
+    public string Id { get; set; }
+
+    public abstract WorkerInstance Duplicate();
+    
+    public abstract void DoWork(Action<string> ReportProgress, Action<string, GH_RuntimeMessageLevel> ReportError, Action Done);
+
+    public abstract void SetData(IGH_DataAccess DA);
+
+    public abstract void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params);
+  }
+
 }

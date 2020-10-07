@@ -16,9 +16,9 @@ namespace GrasshopperAsyncComponent.SampleImplementations
 
     public override GH_Exposure Exposure => GH_Exposure.primary;
 
-    public SampleAsyncComponent() : base("Sample Async Component", "ASYNC", "Meaningless labour.", "Samples", "Async")
+    public SampleAsyncComponent() : base("Sample Async Component", "CYCLOMAXOTRON", "Meaningless labour.", "Samples", "Async")
     {
-      Worker = new SampleAsyncComponentWorker();
+      BaseWorker = new PrimeCalculator();
     }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
@@ -32,46 +32,112 @@ namespace GrasshopperAsyncComponent.SampleImplementations
     }
   }
 
-  public class SampleAsyncComponentWorker : IAsyncComponentWorker
+  public class SampleAsyncWorker : WorkerInstance
   {
     int MaxIterations { get; set; } = 100;
-
-    public void CollectData(IGH_DataAccess DA, GH_ComponentParamServer Params)
+  
+    public override void DoWork(Action<string> ReportProgress, Action<string, GH_RuntimeMessageLevel> ReportError, Action Done)
     {
-      int _maxIterations = 100;
-      DA.GetData(0, ref _maxIterations);
-      if (_maxIterations > 1000) MaxIterations = 1000;
-      if (_maxIterations < 10) MaxIterations = 10;
-
-      MaxIterations = _maxIterations;
-    }
-
-    public void DoWork(CancellationToken token, Action<string> ReportProgress, Action<string, GH_RuntimeMessageLevel> ReportError, Action Done)
-    {
-      if (token.IsCancellationRequested) return;
+      if (CancellationToken.IsCancellationRequested) return;
 
       for (int i = 0; i <= MaxIterations; i++)
       {
         var sw = new SpinWait();
         for (int j = 0; j <= 100; j++)
           sw.SpinOnce();
-        
+
         ReportProgress(((double)(i + 1) / (double)MaxIterations).ToString("0.00%"));
 
-        if (token.IsCancellationRequested) return;
+        if (CancellationToken.IsCancellationRequested) return;
       }
 
       Done();
     }
 
-    public IAsyncComponentWorker GetNewInstance()
+    public override WorkerInstance Duplicate() => new SampleAsyncWorker();
+
+    public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {
-      return new SampleAsyncComponentWorker();
+      if (CancellationToken.IsCancellationRequested) return;
+      
+      int _maxIterations = 100;
+      DA.GetData(0, ref _maxIterations);
+      if (_maxIterations > 1000) _maxIterations = 1000;
+      if (_maxIterations < 10) _maxIterations = 10;
+
+      MaxIterations = _maxIterations;
     }
 
-    public void SetData(IGH_DataAccess DA)
+    public override void SetData(IGH_DataAccess DA)
     {
-      DA.SetData(0, "Hello world. I'm done spinning.");
+      if (CancellationToken.IsCancellationRequested) return;
+      DA.SetData(0, $"Hello world. Worker {Id} has spun for {MaxIterations} iterations.");
     }
   }
+
+  public class PrimeCalculator : WorkerInstance
+  {
+    int TehNthPrime { get; set; } = 100;
+    long ThePrime { get; set; } = -1;
+
+    public override void DoWork(Action<string> ReportProgress, Action<string, GH_RuntimeMessageLevel> ReportError, Action Done)
+    {
+      if (CancellationToken.IsCancellationRequested) return;
+
+      int count = 0;
+      long a = 2;
+
+      while (count < TehNthPrime)
+      {
+        if (CancellationToken.IsCancellationRequested) return;
+
+        long b = 2;
+        int prime = 1;// to check if found a prime
+        while (b * b <= a)
+        {
+
+          if (CancellationToken.IsCancellationRequested) return;
+
+          if (a % b == 0)
+          {
+            prime = 0;
+            break;
+          }
+          b++;
+        }
+
+        ReportProgress(((double)(count) / (double)TehNthPrime).ToString("0.00%"));
+
+        if (prime > 0)
+        {
+          count++;
+        }
+        a++;
+      }
+
+      ThePrime = --a;
+      Done();
+    }
+
+    public override WorkerInstance Duplicate() => new PrimeCalculator();
+
+    public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
+    {
+      if (CancellationToken.IsCancellationRequested) return;
+
+      int _maxIterations = 100;
+      DA.GetData(0, ref _maxIterations);
+      if (_maxIterations > 1000000) _maxIterations = 1000000;
+      if (_maxIterations < 10) _maxIterations = 10;
+
+      TehNthPrime = _maxIterations;
+    }
+
+    public override void SetData(IGH_DataAccess DA)
+    {
+      if (CancellationToken.IsCancellationRequested) return;
+      DA.SetData(0, $"Hello world. Worker {Id} has found for that the {TehNthPrime}th prime is: {ThePrime}");
+    }
+  }
+
 }
