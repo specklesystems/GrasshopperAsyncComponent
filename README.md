@@ -24,9 +24,15 @@ Even better, there's a [sample component that shows how an implementation could 
 
 ### Current limitations
 
-Main current limitation is around data matching. If the component needs to run more than once - e.g., in the case of `Item` input parameters receiving a `List` of objects, it gets stuck in a loop. Currently, the safest bet - albeit not the easiest one - is to make sure your input parameters are set to `Tree` and you can do your own data matching inside. Not ideal, I know. I'm sure this can be improved, but it's late on a Sunday evening. 
+~~Main current limitation is around data matching.~~ Solved! See [this PR](https://github.com/specklesystems/GrasshopperAsyncComponent/pull/4). Components inheriting from the GH_AsyncComponent class can now nicely handle multiple runs and any kind of data matching:
+
+![oneproblemsolved](https://user-images.githubusercontent.com/7696515/95373253-a89ecb00-08d4-11eb-9bd9-9501caa0938e.gif)
+
+Nevertheless, the old caveat applies: this is most efficient if you can batch together as many iterations as possible. 
 
 Given the fact that the responsibility to check for task cancellation is up to the developer, this approach won't be too well suited for components calling code from other libraries that you don't, or can't, manage. 
+
+There's more anyways - make sure to check the issues out!
 
 ### Debugging
 
