@@ -31,8 +31,6 @@ namespace GrasshopperAsyncComponent
 
     int State = 0;
 
-    int Iterations = 0;
-
     bool SetData = false;
 
     List<WorkerInstance> Workers;
