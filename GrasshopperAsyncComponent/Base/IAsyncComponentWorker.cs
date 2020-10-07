@@ -32,7 +32,7 @@ namespace GrasshopperAsyncComponent
 
     /// <summary>
     /// This method is where the actual calculation/computation/heavy lifting should be done. 
-    /// <b>Make sure you always check as frequently as you can if <see cref="WorkerInstance.CancellationToken"/> is cancelled. For an example, see the <see cref="GrasshopperAsyncComponent.SampleImplementations.PrimeCalculator"/>.</b>
+    /// <b>Make sure you always check as frequently as you can if <see cref="WorkerInstance.CancellationToken"/> is cancelled. For an example, see the <see cref="GrasshopperAsyncComponent.SampleImplementations.PrimeCalculatorWorker"/>.</b>
     /// </summary>
     /// <param name="ReportProgress">Call this to report progress up to the parent component.</param>
     /// <param name="ReportError">Call this to report errors up to the parent component.</param>

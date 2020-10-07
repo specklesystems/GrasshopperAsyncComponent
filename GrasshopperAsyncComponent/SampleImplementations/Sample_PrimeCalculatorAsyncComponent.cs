@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace GrasshopperAsyncComponent.SampleImplementations
 {
-  public class SampleAsyncComponent : GH_AsyncComponent
+  public class Sample_PrimeCalculatorAsyncComponent : GH_AsyncComponent
   {
     public override Guid ComponentGuid { get => new Guid("DF2B93E2-052D-4BE4-BC62-90DC1F169BF6"); }
 
@@ -16,19 +16,19 @@ namespace GrasshopperAsyncComponent.SampleImplementations
 
     public override GH_Exposure Exposure => GH_Exposure.primary;
 
-    public SampleAsyncComponent() : base("Sample Async Component", "CYCLOMAXOTRON", "Meaningless labour.", "Samples", "Async")
+    public Sample_PrimeCalculatorAsyncComponent() : base("Sample Async Component", "PRIME", "Calculates the nth prime number.", "Samples", "Async")
     {
-      BaseWorker = new PrimeCalculator();
+      BaseWorker = new PrimeCalculatorWorker();
     }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddIntegerParameter("Max iterations", "M", "How many useless cycles should we spin. Minimum 10, maximum 1000.", GH_ParamAccess.item);
+      pManager.AddIntegerParameter("N", "N", "Which n-th prime number. Minimum 1, maximum one million. Take care, it can burn your CPU.", GH_ParamAccess.item);
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      pManager.AddTextParameter("Output", "O", "Will just say hello world after spinning.", GH_ParamAccess.item);
+      pManager.AddTextParameter("Output", "O", "The n-th prime number.", GH_ParamAccess.item);
     }
   }
 
@@ -75,7 +75,7 @@ namespace GrasshopperAsyncComponent.SampleImplementations
     }
   }
 
-  public class PrimeCalculator : WorkerInstance
+  public class PrimeCalculatorWorker : WorkerInstance
   {
     int TehNthPrime { get; set; } = 100;
     long ThePrime { get; set; } = -1;
@@ -120,24 +120,22 @@ namespace GrasshopperAsyncComponent.SampleImplementations
       Done();
     }
 
-    public override WorkerInstance Duplicate() => new PrimeCalculator();
+    public override WorkerInstance Duplicate() => new PrimeCalculatorWorker();
 
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {
-      if (CancellationToken.IsCancellationRequested) return;
+      int _nthPrime = 100;
+      DA.GetData(0, ref _nthPrime);
+      if (_nthPrime > 1000000) _nthPrime = 1000000;
+      if (_nthPrime < 1) _nthPrime = 1;
 
-      int _maxIterations = 100;
-      DA.GetData(0, ref _maxIterations);
-      if (_maxIterations > 1000000) _maxIterations = 1000000;
-      if (_maxIterations < 10) _maxIterations = 10;
-
-      TehNthPrime = _maxIterations;
+      TehNthPrime = _nthPrime;
     }
 
     public override void SetData(IGH_DataAccess DA)
     {
       if (CancellationToken.IsCancellationRequested) return;
-      DA.SetData(0, $"Hello world. Worker {Id} has found for that the {TehNthPrime}th prime is: {ThePrime}");
+      DA.SetData(0, $"W_ID {Id}: {TehNthPrime}th prime is: {ThePrime}");
     }
   }
 

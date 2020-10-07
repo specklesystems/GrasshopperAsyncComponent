@@ -8,6 +8,9 @@ using Timer = System.Timers.Timer;
 
 namespace GrasshopperAsyncComponent
 {
+  /// <summary>
+  /// Inherit your component from this class to make all the async goodness available.
+  /// </summary>
   public abstract class GH_AsyncComponent : GH_Component
   {
     public override Guid ComponentGuid { get => new Guid("5DBBD498-0326-4E25-83A5-424D8DC493D4"); }
@@ -30,12 +33,23 @@ namespace GrasshopperAsyncComponent
 
     int Iterations = 0;
 
-    public WorkerInstance BaseWorker { get; set; }
+    bool SetData = false;
 
     List<WorkerInstance> Workers;
 
+    List<Task> Tasks;
+
     List<CancellationTokenSource> CancelationSources;
 
+    /// <summary>
+    /// Set this property inside the constructor of your derived component. 
+    /// </summary>
+    public WorkerInstance BaseWorker { get; set; }
+
+    /// <summary>
+    /// Optional: if you have opinions on how the default system task scheduler should treat your workers, set it here.
+    /// </summary>
+    public TaskCreationOptions? TaskCreationOptions { get; set; } = null;
 
     protected GH_AsyncComponent(string name, string nickname, string description, string category, string subCategory) : base(name, nickname, description, category, subCategory)
     {
@@ -61,8 +75,10 @@ namespace GrasshopperAsyncComponent
       {
         State++;
 
-        if (State == Iterations)
+        if (State == Workers.Count)
         {
+          SetData = true;
+          Workers.Reverse();
           Rhino.RhinoApp.InvokeOnUiThread((Action)delegate
           {
             ExpireSolution(true);
@@ -74,28 +90,35 @@ namespace GrasshopperAsyncComponent
 
       Workers = new List<WorkerInstance>();
       CancelationSources = new List<CancellationTokenSource>();
+      Tasks = new List<Task>();
     }
 
     protected override void BeforeSolveInstance()
     {
-      if (State != 0) return;
+      if (State != 0 && SetData) return;
 
       foreach (var source in CancelationSources) source.Cancel();
 
       CancelationSources.Clear();
       Workers.Clear();
       Errors.Clear();
+      Tasks.Clear();
 
       State = 0;
-      Iterations = 0;
-      base.BeforeSolveInstance();
+    }
+
+    protected override void AfterSolveInstance()
+    {
+      if (State == 0 && Tasks.Count > 0)
+      {
+        foreach (var task in Tasks) task.Start();
+      }
     }
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
       if (State == 0)
       {
-        Iterations++;
         if (BaseWorker == null)
         {
           AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Worker class not provided.");
@@ -116,32 +139,50 @@ namespace GrasshopperAsyncComponent
         var tokenSource = new CancellationTokenSource();
         CurrentWorker.CancellationToken = tokenSource.Token;
         CurrentWorker.Id = DA.Iteration.ToString();
-        var CurrentRun = new Task(() => CurrentWorker.DoWork(ReportProgress, ReportError, Done), tokenSource.Token, TaskCreationOptions.LongRunning);
 
+        Task CurrentRun;
+        if (TaskCreationOptions != null)
+        {
+          CurrentRun = new Task(() => CurrentWorker.DoWork(ReportProgress, ReportError, Done), tokenSource.Token, (TaskCreationOptions)TaskCreationOptions);
+        }
+        else
+        {
+          CurrentRun = new Task(() => CurrentWorker.DoWork(ReportProgress, ReportError, Done), tokenSource.Token);
+        }
         // Add cancelation source to our bag
         CancelationSources.Add(tokenSource);
+
         // Add the worker to our list
         Workers.Add(CurrentWorker);
 
-        CurrentRun.Start();
+        Tasks.Add(CurrentRun);
+
         return;
       }
 
-      var test = DA.Iteration;
-
-      Workers[DA.Iteration].SetData(DA);
-
-      // Note we're decrementing the state here.
-      if (--State == 0)
+      if (SetData)
       {
-        foreach (var (message, type) in Errors)
-        {
-          AddRuntimeMessage(type, message);
-        }
+        if (Workers.Count > 0)
+          Workers[--State].SetData(DA);
 
-        Message = "Done";
-        OnDisplayExpired(true);
-        Errors.Clear();
+        if (State == 0)
+        {
+          foreach (var (message, type) in Errors)
+          {
+            AddRuntimeMessage(type, message);
+          }
+
+          CancelationSources.Clear();
+          Workers.Clear();
+          Errors.Clear();
+          Tasks.Clear();
+
+          SetData = false;
+
+          Message = "Done";
+          //OnDisplayExpired(true);
+          OnDisplayExpired(false);
+        }
       }
     }
   }
