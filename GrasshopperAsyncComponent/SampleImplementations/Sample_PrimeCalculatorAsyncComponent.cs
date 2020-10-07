@@ -10,7 +10,7 @@ namespace GrasshopperAsyncComponent.SampleImplementations
 {
   public class Sample_PrimeCalculatorAsyncComponent : GH_AsyncComponent
   {
-    public override Guid ComponentGuid { get => new Guid("DF2B93E2-052D-4BE4-BC62-90DC1F169BF6"); }
+    public override Guid ComponentGuid { get => new Guid("22C612B0-2C57-47CE-B9FE-E10621F18933"); }
 
     protected override System.Drawing.Bitmap Icon { get => null; }
 
@@ -32,71 +32,30 @@ namespace GrasshopperAsyncComponent.SampleImplementations
     }
   }
 
-  public class SampleAsyncWorker : WorkerInstance
-  {
-    int MaxIterations { get; set; } = 100;
-  
-    public override void DoWork(Action<string> ReportProgress, Action<string, GH_RuntimeMessageLevel> ReportError, Action Done)
-    {
-      if (CancellationToken.IsCancellationRequested) return;
-
-      for (int i = 0; i <= MaxIterations; i++)
-      {
-        var sw = new SpinWait();
-        for (int j = 0; j <= 100; j++)
-          sw.SpinOnce();
-
-        ReportProgress(((double)(i + 1) / (double)MaxIterations).ToString("0.00%"));
-
-        if (CancellationToken.IsCancellationRequested) return;
-      }
-
-      Done();
-    }
-
-    public override WorkerInstance Duplicate() => new SampleAsyncWorker();
-
-    public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
-    {
-      if (CancellationToken.IsCancellationRequested) return;
-      
-      int _maxIterations = 100;
-      DA.GetData(0, ref _maxIterations);
-      if (_maxIterations > 1000) _maxIterations = 1000;
-      if (_maxIterations < 10) _maxIterations = 10;
-
-      MaxIterations = _maxIterations;
-    }
-
-    public override void SetData(IGH_DataAccess DA)
-    {
-      if (CancellationToken.IsCancellationRequested) return;
-      DA.SetData(0, $"Hello world. Worker {Id} has spun for {MaxIterations} iterations.");
-    }
-  }
-
   public class PrimeCalculatorWorker : WorkerInstance
   {
-    int TehNthPrime { get; set; } = 100;
+    int TheNthPrime { get; set; } = 100;
     long ThePrime { get; set; } = -1;
 
     public override void DoWork(Action<string> ReportProgress, Action<string, GH_RuntimeMessageLevel> ReportError, Action Done)
     {
+      // 👉 Checking for cancellation!
       if (CancellationToken.IsCancellationRequested) return;
 
       int count = 0;
       long a = 2;
 
       // Thanks Steak Overflow (TM) https://stackoverflow.com/a/13001749/
-      while (count < TehNthPrime)
+      while (count < TheNthPrime)
       {
+        // 👉 Checking for cancellation!
         if (CancellationToken.IsCancellationRequested) return;
 
         long b = 2;
         int prime = 1;// to check if found a prime
         while (b * b <= a)
         {
-
+          // 👉 Checking for cancellation!
           if (CancellationToken.IsCancellationRequested) return;
 
           if (a % b == 0)
@@ -107,7 +66,7 @@ namespace GrasshopperAsyncComponent.SampleImplementations
           b++;
         }
 
-        ReportProgress(((double)(count) / (double)TehNthPrime).ToString("0.00%"));
+        ReportProgress(((double)(count) / TheNthPrime).ToString("0.00%"));
 
         if (prime > 0)
         {
@@ -129,13 +88,15 @@ namespace GrasshopperAsyncComponent.SampleImplementations
       if (_nthPrime > 1000000) _nthPrime = 1000000;
       if (_nthPrime < 1) _nthPrime = 1;
 
-      TehNthPrime = _nthPrime;
+      TheNthPrime = _nthPrime;
     }
 
     public override void SetData(IGH_DataAccess DA)
     {
+      // 👉 Checking for cancellation!
       if (CancellationToken.IsCancellationRequested) return;
-      DA.SetData(0, $"W_ID {Id}: {TehNthPrime}th prime is: {ThePrime}");
+
+      DA.SetData(0, $"Worker {Id}: {TheNthPrime}th prime is: {ThePrime}");
     }
   }
 

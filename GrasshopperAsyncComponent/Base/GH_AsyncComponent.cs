@@ -78,7 +78,9 @@ namespace GrasshopperAsyncComponent
         if (State == Workers.Count)
         {
           SetData = true;
+          // We need to reverse the workers list to set the outputs in the same order as the inputs. 
           Workers.Reverse();
+
           Rhino.RhinoApp.InvokeOnUiThread((Action)delegate
           {
             ExpireSolution(true);
@@ -109,6 +111,7 @@ namespace GrasshopperAsyncComponent
 
     protected override void AfterSolveInstance()
     {
+      // We need to start all the tasks as close as possible to each other.
       if (State == 0 && Tasks.Count > 0)
       {
         foreach (var task in Tasks) task.Start();
@@ -180,8 +183,7 @@ namespace GrasshopperAsyncComponent
           SetData = false;
 
           Message = "Done";
-          //OnDisplayExpired(true);
-          OnDisplayExpired(false);
+          OnDisplayExpired(true);
         }
       }
     }
