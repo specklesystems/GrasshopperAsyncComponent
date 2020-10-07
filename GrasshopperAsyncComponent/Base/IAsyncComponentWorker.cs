@@ -8,37 +8,49 @@ using System.Threading.Tasks;
 
 namespace GrasshopperAsyncComponent
 {
-  // TODO: Would an an abstract class be better here? 
-  public interface IAsyncComponentWorker
+  
+  /// <summary>
+  /// A class that holds the actual compute logic and encapsulates the state it needs. Every <see cref="GH_AsyncComponent"/> needs to have one.
+  /// </summary>
+  public abstract class WorkerInstance
   {
+    /// <summary>
+    /// This token is set by the parent <see cref="GH_AsyncComponent"/>. 
+    /// </summary>
+    public CancellationToken CancellationToken { get; set; }
 
     /// <summary>
-    /// This function should return a duplicate instance of your class. Make sure any state is duplicated (or not) properly. 
+    /// This is set by the parent <see cref="GH_AsyncComponent"/>. You can set it yourself, but it's not really worth it.
+    /// </summary>
+    public string Id { get; set; }
+
+    /// <summary>
+    /// This is a "factory" method. It should return a fresh instance of this class, but with all the necessary state that you might have passed on directly from your component.
     /// </summary>
     /// <returns></returns>
-    IAsyncComponentWorker GetNewInstance();
+    public abstract WorkerInstance Duplicate();
 
     /// <summary>
-    /// Here you can safely set the data of your component, just like you would normally. <b>Important: do not call this method directly! When you are ready, call the provided "Done" action from the DoWork function.</b>
+    /// This method is where the actual calculation/computation/heavy lifting should be done. 
+    /// <b>Make sure you always check as frequently as you can if <see cref="WorkerInstance.CancellationToken"/> is cancelled. For an example, see the <see cref="GrasshopperAsyncComponent.SampleImplementations.PrimeCalculatorWorker"/>.</b>
+    /// </summary>
+    /// <param name="ReportProgress">Call this to report progress up to the parent component.</param>
+    /// <param name="ReportError">Call this to report errors up to the parent component.</param>
+    /// <param name="Done">Call this when everything is <b>done</b>. It will tell the parent component that you're ready to <see cref="SetData(IGH_DataAccess)"/>.</param>
+    public abstract void DoWork(Action<string> ReportProgress, Action<string, GH_RuntimeMessageLevel> ReportError, Action Done);
+
+    /// <summary>
+    /// Write your data setting logic here. <b>Do not call this function directly from this class. It will be invoked by the parent <see cref="GH_AsyncComponent"/> after you've called `Done` in the <see cref="DoWork(Action{string}, Action{string, GH_RuntimeMessageLevel}, Action)"/> function.</b>
     /// </summary>
     /// <param name="DA"></param>
-    void SetData(IGH_DataAccess DA);
+    public abstract void SetData(IGH_DataAccess DA);
 
     /// <summary>
-    /// Here you can safely collect the data from your component, just like you would normally. <b>Important: do not call this method directly. It will be invoked by the parent component.</b>
+    /// Write your data collection logic here. <b>Do not call this method directly. It will be invoked by the parent <see cref="GH_AsyncComponent"/>.</b>
     /// </summary>
-    /// <param name="DA">The magic Data Access class.</param>
-    /// <param name="Params">The parameters list, in case you need it.</param>
-    void CollectData(IGH_DataAccess DA, GH_ComponentParamServer Params);
-
-    /// <summary>
-    /// This where the computation happens. Make sure to check and return if the token is cancelled!
-    /// </summary>
-    /// <param name="token">The cancellation token.</param>
-    /// <param name="ReportProgress">Call this action to report progress. It will be displayed in the component's message bar.</param>
-    /// <param name="ReportError">Call this to report a warning or an error.</param>
-    /// <param name="Done">When you are done computing, call this function to have the parent component invoke the SetData function.</param>
-    void DoWork(CancellationToken token, Action<string> ReportProgress, Action<string, GH_RuntimeMessageLevel> ReportError, Action Done);
-
+    /// <param name="DA"></param>
+    /// <param name="Params"></param>
+    public abstract void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params);
   }
+
 }
