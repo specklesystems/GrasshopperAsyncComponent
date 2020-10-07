@@ -65,7 +65,6 @@ namespace GrasshopperAsyncComponent
         {
           Rhino.RhinoApp.InvokeOnUiThread((Action)delegate
           {
-            //State = 1;
             ExpireSolution(true);
           });
         }
@@ -116,6 +115,7 @@ namespace GrasshopperAsyncComponent
         // Create the task
         var tokenSource = new CancellationTokenSource();
         CurrentWorker.CancellationToken = tokenSource.Token;
+        CurrentWorker.Id = DA.Iteration.ToString();
         var CurrentRun = new Task(() => CurrentWorker.DoWork(ReportProgress, ReportError, Done), tokenSource.Token, TaskCreationOptions.LongRunning);
 
         // Add cancelation source to our bag
@@ -131,6 +131,7 @@ namespace GrasshopperAsyncComponent
 
       Workers[DA.Iteration].SetData(DA);
 
+      // Note we're decrementing the state here.
       if (--State == 0)
       {
         foreach (var (message, type) in Errors)

@@ -87,6 +87,7 @@ namespace GrasshopperAsyncComponent.SampleImplementations
       int count = 0;
       long a = 2;
 
+      // Thanks Steak Overflow (TM) https://stackoverflow.com/a/13001749/
       while (count < TehNthPrime)
       {
         if (CancellationToken.IsCancellationRequested) return;
