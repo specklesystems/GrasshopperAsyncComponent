@@ -61,7 +61,7 @@
   <ItemGroup>
     <Compile Include="Base\GH_AsyncComponent.cs" />
     <Compile Include="Info\GrasshopperAsyncComponentInfo.cs" />
-    <Compile Include="Base\IAsyncComponentWorker.cs" />
+    <Compile Include="Base\WorkerInstance.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SampleImplementations\Sample_PrimeCalculatorAsyncComponent.cs" />
     <Compile Include="SampleImplementations\Sample_UslessCyclesComponent.cs" />

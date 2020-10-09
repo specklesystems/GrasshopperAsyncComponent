@@ -16,7 +16,7 @@ namespace GrasshopperAsyncComponent.SampleImplementations
 
     public override GH_Exposure Exposure => GH_Exposure.primary;
 
-    public Sample_PrimeCalculatorAsyncComponent() : base("Sample Async Component", "PRIME", "Calculates the nth prime number.", "Samples", "Async")
+    public Sample_PrimeCalculatorAsyncComponent() : base("The N-th Prime Calculator", "PRIME", "Calculates the nth prime number.", "Samples", "Async")
     {
       BaseWorker = new PrimeCalculatorWorker();
     }
@@ -28,7 +28,8 @@ namespace GrasshopperAsyncComponent.SampleImplementations
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      pManager.AddTextParameter("Output", "O", "The n-th prime number.", GH_ParamAccess.item);
+      pManager.AddNumberParameter("Output", "O", "The n-th prime number.", GH_ParamAccess.item);
+
     }
   }
 
@@ -37,7 +38,7 @@ namespace GrasshopperAsyncComponent.SampleImplementations
     int TheNthPrime { get; set; } = 100;
     long ThePrime { get; set; } = -1;
 
-    public override void DoWork(Action<string> ReportProgress, Action<string, GH_RuntimeMessageLevel> ReportError, Action Done)
+    public override void DoWork(Action<string, double> ReportProgress, Action<string, GH_RuntimeMessageLevel> ReportError, Action Done)
     {
       // 👉 Checking for cancellation!
       if (CancellationToken.IsCancellationRequested) return;
@@ -66,7 +67,7 @@ namespace GrasshopperAsyncComponent.SampleImplementations
           b++;
         }
 
-        ReportProgress(((double)(count) / TheNthPrime).ToString("0.00%"));
+        ReportProgress(Id, ((double)count) / TheNthPrime);
 
         if (prime > 0)
         {
@@ -96,7 +97,7 @@ namespace GrasshopperAsyncComponent.SampleImplementations
       // 👉 Checking for cancellation!
       if (CancellationToken.IsCancellationRequested) return;
 
-      DA.SetData(0, $"Worker {Id}: {TheNthPrime}th prime is: {ThePrime}");
+      DA.SetData(0, ThePrime);
     }
   }
 

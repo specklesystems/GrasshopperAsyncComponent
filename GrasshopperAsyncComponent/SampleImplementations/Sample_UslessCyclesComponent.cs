@@ -36,7 +36,7 @@ namespace GrasshopperAsyncComponent.SampleImplementations
   {
     int MaxIterations { get; set; } = 100;
 
-    public override void DoWork(Action<string> ReportProgress, Action<string, GH_RuntimeMessageLevel> ReportError, Action Done)
+    public override void DoWork(Action<string, double> ReportProgress, Action<string, GH_RuntimeMessageLevel> ReportError, Action Done)
     {
       // Checking for cancellation
       if (CancellationToken.IsCancellationRequested) return;
@@ -47,8 +47,8 @@ namespace GrasshopperAsyncComponent.SampleImplementations
         for (int j = 0; j <= 100; j++)
           sw.SpinOnce();
 
-        ReportProgress(((double)(i + 1) / (double)MaxIterations).ToString("0.00%"));
-        
+        ReportProgress(Id, ((double)(i + 1) / (double)MaxIterations));
+
         // Checking for cancellation
         if (CancellationToken.IsCancellationRequested) return;
       }

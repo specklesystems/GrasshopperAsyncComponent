@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Grasshopper.Kernel;
@@ -19,12 +20,14 @@ namespace GrasshopperAsyncComponent
 
     public override GH_Exposure Exposure => GH_Exposure.hidden;
 
-    Action<string> ReportProgress;
-
     Action<string, GH_RuntimeMessageLevel> ReportError;
 
     List<(string, GH_RuntimeMessageLevel)> Errors;
 
+    Action<string, double> ReportProgress;
+
+    ConcurrentDictionary<string, double> ProgressReports;
+    
     Action Done;
 
     Timer DisplayProgressTimer;
@@ -55,15 +58,31 @@ namespace GrasshopperAsyncComponent
       DisplayProgressTimer = new Timer(333) { AutoReset = false };
       DisplayProgressTimer.Elapsed += (s, e) =>
       {
+        if (Workers.Count == 0) return;
+        if (Workers.Count == 1)
+        {
+          Message = ProgressReports.Values.Last().ToString("0.00%");
+        }
+        else
+        {
+          double total = 0;
+          foreach (var kvp in ProgressReports)
+          {
+            total += kvp.Value;
+          }
+
+          Message = (total / Workers.Count).ToString("0.00%");
+        }
+
         Rhino.RhinoApp.InvokeOnUiThread((Action)delegate
         {
           OnDisplayExpired(true);
         });
       };
 
-      ReportProgress = (progress) =>
+      ReportProgress = (id, value) =>
       {
-        Message = progress;
+        ProgressReports[id] = value;
         if (!DisplayProgressTimer.Enabled) DisplayProgressTimer.Start();
       };
 
@@ -87,6 +106,7 @@ namespace GrasshopperAsyncComponent
       };
 
       Errors = new List<(string, GH_RuntimeMessageLevel)>();
+      ProgressReports = new ConcurrentDictionary<string, double>();
 
       Workers = new List<WorkerInstance>();
       CancelationSources = new List<CancellationTokenSource>();
@@ -102,9 +122,12 @@ namespace GrasshopperAsyncComponent
       CancelationSources.Clear();
       Workers.Clear();
       Errors.Clear();
+      ProgressReports.Clear();
       Tasks.Clear();
 
       State = 0;
+
+      var test = Params.Output[0].VolatileData;
     }
 
     protected override void AfterSolveInstance()
@@ -113,7 +136,15 @@ namespace GrasshopperAsyncComponent
       if (State == 0 && Tasks.Count > 0)
       {
         foreach (var task in Tasks) task.Start();
+        var test = Params.Output[0].VolatileData;
       }
+    }
+
+    protected override void ExpireDownStreamObjects()
+    {
+      // Prevents the flash of null data until the new solution is ready
+      if (SetData)
+        base.ExpireDownStreamObjects();
     }
 
     protected override void SolveInstance(IGH_DataAccess DA)
@@ -139,7 +170,7 @@ namespace GrasshopperAsyncComponent
         // Create the task
         var tokenSource = new CancellationTokenSource();
         CurrentWorker.CancellationToken = tokenSource.Token;
-        CurrentWorker.Id = DA.Iteration.ToString();
+        CurrentWorker.Id = $"Worker-{DA.Iteration}";
 
         Task CurrentRun;
         if (TaskCreationOptions != null)
@@ -176,6 +207,7 @@ namespace GrasshopperAsyncComponent
           CancelationSources.Clear();
           Workers.Clear();
           Errors.Clear();
+          ProgressReports.Clear();
           Tasks.Clear();
 
           SetData = false;
