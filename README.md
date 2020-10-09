@@ -20,7 +20,9 @@ Looks nice, doesn't it? Notice that the solution runs "eagerly" - every time the
 
 Provides an abstract `GH_AsyncComponent` which you can inherit from to scaffold your own async component. There's more info in the [blogpost](https://speckle.systems/blog/async-gh/) on how to go about it.
 
-Even better, there's a [sample component that shows how an implementation could look like](https://github.com/specklesystems/GrasshopperAsyncComponent/blob/cf889e7f2c15f5fd90553000977a2da55aae0ab8/GrasshopperAsyncComponent/SampleImplementations/SampleAsyncComponent.cs#L11-L77)!
+Even better, there's a [sample component that shows how an implementation could look like](https://github.com/specklesystems/GrasshopperAsyncComponent/tree/main/GrasshopperAsyncComponent/SampleImplementations)! There's two components in that folder:
+- The Useless Spinner: does no meaningfull CPU work, just keeps a thread busy with SpinWait()
+- The N-th Prime Calculator: can actually spin your computer's fans quite a bit (for numbers > 100.000) 
 
 ### Current limitations
 
@@ -28,11 +30,21 @@ Even better, there's a [sample component that shows how an implementation could 
 
 ![oneproblemsolved](https://user-images.githubusercontent.com/7696515/95373253-a89ecb00-08d4-11eb-9bd9-9501caa0938e.gif)
 
-Nevertheless, the old caveat applies: this is most efficient if you can batch together as many iterations as possible. 
+~~Flash of null data~~ Solved! These Async Components now only expire their downstream dependants when they're done with their tasks. 
 
-Given the fact that the responsibility to check for task cancellation is up to the developer, this approach won't be too well suited for components calling code from other libraries that you don't, or can't, manage. 
+![lookmanoflash-2](https://user-images.githubusercontent.com/7696515/95596003-bbd0a880-0a44-11eb-90df-044b18dcc019.gif)
 
-There's more anyways - make sure to check the issues out!
+Other limitations: 
+
+- This approach is most efficient if you can batch together as many iterations as possible. Ideally you'd work with trees straight away. 
+
+- Task cancellation is up to the developer: this approach won't be too well suited for components calling code from other libraries that you don't, or can't, manage. 
+
+### FAQ
+
+Q: Does this component use all my cores? A: OH YES. It goes WROOOM.
+
+![image](https://user-images.githubusercontent.com/7696515/95597125-29310900-0a46-11eb-99ce-663b34506a7a.png)
 
 ### Debugging
 
