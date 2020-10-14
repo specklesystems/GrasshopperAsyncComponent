@@ -26,7 +26,7 @@ namespace GrasshopperAsyncComponent
 
     Action<string, double> ReportProgress;
 
-    ConcurrentDictionary<string, double> ProgressReports;
+    public ConcurrentDictionary<string, double> ProgressReports;
     
     Action Done;
 
@@ -36,7 +36,7 @@ namespace GrasshopperAsyncComponent
 
     bool SetData = false;
 
-    List<WorkerInstance> Workers;
+    public List<WorkerInstance> Workers;
 
     List<Task> Tasks;
 
