@@ -56,29 +56,7 @@ namespace GrasshopperAsyncComponent
     {
 
       DisplayProgressTimer = new Timer(333) { AutoReset = false };
-      DisplayProgressTimer.Elapsed += (s, e) =>
-      {
-        if (Workers.Count == 0) return;
-        if (Workers.Count == 1)
-        {
-          Message = ProgressReports.Values.Last().ToString("0.00%");
-        }
-        else
-        {
-          double total = 0;
-          foreach (var kvp in ProgressReports)
-          {
-            total += kvp.Value;
-          }
-
-          Message = (total / Workers.Count).ToString("0.00%");
-        }
-
-        Rhino.RhinoApp.InvokeOnUiThread((Action)delegate
-        {
-          OnDisplayExpired(true);
-        });
-      };
+      DisplayProgressTimer.Elapsed += DisplayProgress;
 
       ReportProgress = (id, value) =>
       {
@@ -112,6 +90,31 @@ namespace GrasshopperAsyncComponent
       CancelationSources = new List<CancellationTokenSource>();
       Tasks = new List<Task>();
     }
+
+    public virtual void DisplayProgress(object sender, System.Timers.ElapsedEventArgs e)
+    {
+      if (Workers.Count == 0) return;
+      if (Workers.Count == 1)
+      {
+        Message = ProgressReports.Values.Last().ToString("0.00%");
+      }
+      else
+      {
+        double total = 0;
+        foreach (var kvp in ProgressReports)
+        {
+          total += kvp.Value;
+        }
+
+        Message = (total / Workers.Count).ToString("0.00%");
+      }
+
+      Rhino.RhinoApp.InvokeOnUiThread((Action)delegate
+      {
+        OnDisplayExpired(true);
+      });
+    }
+
 
     protected override void BeforeSolveInstance()
     {
