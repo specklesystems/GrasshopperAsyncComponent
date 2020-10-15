@@ -46,9 +46,8 @@ namespace GrasshopperAsyncComponent
     /// <b>Make sure you always check as frequently as you can if <see cref="WorkerInstance.CancellationToken"/> is cancelled. For an example, see the <see cref="GrasshopperAsyncComponent.SampleImplementations.PrimeCalculatorWorker"/>.</b>
     /// </summary>
     /// <param name="ReportProgress">Call this to report progress up to the parent component.</param>
-    /// <param name="ReportMessage">Call this to report errors up to the parent component.</param>
     /// <param name="Done">Call this when everything is <b>done</b>. It will tell the parent component that you're ready to <see cref="SetData(IGH_DataAccess)"/>.</param>
-    public abstract void DoWork(Action<string, double> ReportProgress, Action<string, GH_RuntimeMessageLevel> ReportMessage, Action Done);
+    public abstract void DoWork(Action<string, double> ReportProgress, Action Done);
 
     /// <summary>
     /// Write your data setting logic here. <b>Do not call this function directly from this class. It will be invoked by the parent <see cref="GH_AsyncComponent"/> after you've called `Done` in the <see cref="DoWork(Action{string}, Action{string, GH_RuntimeMessageLevel}, Action)"/> function.</b>

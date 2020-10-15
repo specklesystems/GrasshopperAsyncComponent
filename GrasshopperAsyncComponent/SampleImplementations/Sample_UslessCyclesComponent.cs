@@ -38,7 +38,7 @@ namespace GrasshopperAsyncComponent.SampleImplementations
 
     public UselessCyclesWorker() : base(null) { }
 
-    public override void DoWork(Action<string, double> ReportProgress, Action<string, GH_RuntimeMessageLevel> ReportError, Action Done)
+    public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
       // Checking for cancellation
       if (CancellationToken.IsCancellationRequested) return;

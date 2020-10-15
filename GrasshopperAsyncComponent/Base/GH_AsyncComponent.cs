@@ -20,9 +20,7 @@ namespace GrasshopperAsyncComponent
 
     public override GH_Exposure Exposure => GH_Exposure.hidden;
 
-    Action<string, GH_RuntimeMessageLevel> ReportError;
-
-    List<(string, GH_RuntimeMessageLevel)> Errors;
+    //List<(string, GH_RuntimeMessageLevel)> Errors;
 
     Action<string, double> ReportProgress;
 
@@ -64,8 +62,6 @@ namespace GrasshopperAsyncComponent
         if (!DisplayProgressTimer.Enabled) DisplayProgressTimer.Start();
       };
 
-      ReportError = (error, type) => Errors?.Add((error, type));
-
       Done = () =>
       {
         State++;
@@ -83,7 +79,6 @@ namespace GrasshopperAsyncComponent
         }
       };
 
-      Errors = new List<(string, GH_RuntimeMessageLevel)>();
       ProgressReports = new ConcurrentDictionary<string, double>();
 
       Workers = new List<WorkerInstance>();
@@ -123,7 +118,6 @@ namespace GrasshopperAsyncComponent
 
       CancelationSources.Clear();
       Workers.Clear();
-      Errors.Clear();
       ProgressReports.Clear();
       Tasks.Clear();
 
@@ -177,11 +171,11 @@ namespace GrasshopperAsyncComponent
         Task CurrentRun;
         if (TaskCreationOptions != null)
         {
-          CurrentRun = new Task(() => CurrentWorker.DoWork(ReportProgress, ReportError, Done), tokenSource.Token, (TaskCreationOptions)TaskCreationOptions);
+          CurrentRun = new Task(() => CurrentWorker.DoWork(ReportProgress, Done), tokenSource.Token, (TaskCreationOptions)TaskCreationOptions);
         }
         else
         {
-          CurrentRun = new Task(() => CurrentWorker.DoWork(ReportProgress, ReportError, Done), tokenSource.Token);
+          CurrentRun = new Task(() => CurrentWorker.DoWork(ReportProgress, Done), tokenSource.Token);
         }
         // Add cancelation source to our bag
         CancelationSources.Add(tokenSource);
@@ -201,14 +195,8 @@ namespace GrasshopperAsyncComponent
 
         if (State == 0)
         {
-          foreach (var (message, type) in Errors)
-          {
-            AddRuntimeMessage(type, message);
-          }
-
           CancelationSources.Clear();
           Workers.Clear();
-          Errors.Clear();
           ProgressReports.Clear();
           Tasks.Clear();
 
