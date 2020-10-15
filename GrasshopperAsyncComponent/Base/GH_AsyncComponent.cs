@@ -20,13 +20,11 @@ namespace GrasshopperAsyncComponent
 
     public override GH_Exposure Exposure => GH_Exposure.hidden;
 
-    Action<string, GH_RuntimeMessageLevel> ReportError;
-
-    List<(string, GH_RuntimeMessageLevel)> Errors;
+    //List<(string, GH_RuntimeMessageLevel)> Errors;
 
     Action<string, double> ReportProgress;
 
-    ConcurrentDictionary<string, double> ProgressReports;
+    public ConcurrentDictionary<string, double> ProgressReports;
     
     Action Done;
 
@@ -36,7 +34,7 @@ namespace GrasshopperAsyncComponent
 
     bool SetData = false;
 
-    List<WorkerInstance> Workers;
+    public List<WorkerInstance> Workers;
 
     List<Task> Tasks;
 
@@ -56,37 +54,13 @@ namespace GrasshopperAsyncComponent
     {
 
       DisplayProgressTimer = new Timer(333) { AutoReset = false };
-      DisplayProgressTimer.Elapsed += (s, e) =>
-      {
-        if (Workers.Count == 0) return;
-        if (Workers.Count == 1)
-        {
-          Message = ProgressReports.Values.Last().ToString("0.00%");
-        }
-        else
-        {
-          double total = 0;
-          foreach (var kvp in ProgressReports)
-          {
-            total += kvp.Value;
-          }
-
-          Message = (total / Workers.Count).ToString("0.00%");
-        }
-
-        Rhino.RhinoApp.InvokeOnUiThread((Action)delegate
-        {
-          OnDisplayExpired(true);
-        });
-      };
+      DisplayProgressTimer.Elapsed += DisplayProgress;
 
       ReportProgress = (id, value) =>
       {
         ProgressReports[id] = value;
         if (!DisplayProgressTimer.Enabled) DisplayProgressTimer.Start();
       };
-
-      ReportError = (error, type) => Errors?.Add((error, type));
 
       Done = () =>
       {
@@ -105,12 +79,35 @@ namespace GrasshopperAsyncComponent
         }
       };
 
-      Errors = new List<(string, GH_RuntimeMessageLevel)>();
       ProgressReports = new ConcurrentDictionary<string, double>();
 
       Workers = new List<WorkerInstance>();
       CancelationSources = new List<CancellationTokenSource>();
       Tasks = new List<Task>();
+    }
+
+    public virtual void DisplayProgress(object sender, System.Timers.ElapsedEventArgs e)
+    {
+      if (Workers.Count == 0) return;
+      if (Workers.Count == 1)
+      {
+        Message = ProgressReports.Values.Last().ToString("0.00%");
+      }
+      else
+      {
+        double total = 0;
+        foreach (var kvp in ProgressReports)
+        {
+          total += kvp.Value;
+        }
+
+        Message = (total / Workers.Count).ToString("0.00%");
+      }
+
+      Rhino.RhinoApp.InvokeOnUiThread((Action)delegate
+      {
+        OnDisplayExpired(true);
+      });
     }
 
     protected override void BeforeSolveInstance()
@@ -121,7 +118,6 @@ namespace GrasshopperAsyncComponent
 
       CancelationSources.Clear();
       Workers.Clear();
-      Errors.Clear();
       ProgressReports.Clear();
       Tasks.Clear();
 
@@ -175,11 +171,11 @@ namespace GrasshopperAsyncComponent
         Task CurrentRun;
         if (TaskCreationOptions != null)
         {
-          CurrentRun = new Task(() => CurrentWorker.DoWork(ReportProgress, ReportError, Done), tokenSource.Token, (TaskCreationOptions)TaskCreationOptions);
+          CurrentRun = new Task(() => CurrentWorker.DoWork(ReportProgress, Done), tokenSource.Token, (TaskCreationOptions)TaskCreationOptions);
         }
         else
         {
-          CurrentRun = new Task(() => CurrentWorker.DoWork(ReportProgress, ReportError, Done), tokenSource.Token);
+          CurrentRun = new Task(() => CurrentWorker.DoWork(ReportProgress, Done), tokenSource.Token);
         }
         // Add cancelation source to our bag
         CancelationSources.Add(tokenSource);
@@ -199,14 +195,8 @@ namespace GrasshopperAsyncComponent
 
         if (State == 0)
         {
-          foreach (var (message, type) in Errors)
-          {
-            AddRuntimeMessage(type, message);
-          }
-
           CancelationSources.Clear();
           Workers.Clear();
-          Errors.Clear();
           ProgressReports.Clear();
           Tasks.Clear();
 
