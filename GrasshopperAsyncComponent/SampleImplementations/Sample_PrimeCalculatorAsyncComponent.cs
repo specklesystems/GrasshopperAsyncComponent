@@ -38,6 +38,8 @@ namespace GrasshopperAsyncComponent.SampleImplementations
     int TheNthPrime { get; set; } = 100;
     long ThePrime { get; set; } = -1;
 
+    public PrimeCalculatorWorker() : base(null) { }
+
     public override void DoWork(Action<string, double> ReportProgress, Action<string, GH_RuntimeMessageLevel> ReportError, Action Done)
     {
       // 👉 Checking for cancellation!

@@ -36,6 +36,8 @@ namespace GrasshopperAsyncComponent.SampleImplementations
   {
     int MaxIterations { get; set; } = 100;
 
+    public UselessCyclesWorker() : base(null) { }
+
     public override void DoWork(Action<string, double> ReportProgress, Action<string, GH_RuntimeMessageLevel> ReportError, Action Done)
     {
       // Checking for cancellation

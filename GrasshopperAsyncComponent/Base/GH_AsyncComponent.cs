@@ -115,7 +115,6 @@ namespace GrasshopperAsyncComponent
       });
     }
 
-
     protected override void BeforeSolveInstance()
     {
       if (State != 0 && SetData) return;
