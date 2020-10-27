@@ -123,7 +123,7 @@ namespace GrasshopperAsyncComponent
 
       State = 0;
 
-      var test = Params.Output[0].VolatileData;
+      //var test = Params.Output[0].VolatileData;
     }
 
     protected override void AfterSolveInstance()
@@ -132,7 +132,7 @@ namespace GrasshopperAsyncComponent
       if (State == 0 && Tasks.Count > 0)
       {
         foreach (var task in Tasks) task.Start();
-        var test = Params.Output[0].VolatileData;
+        //var test = Params.Output[0].VolatileData;
       }
     }
 
