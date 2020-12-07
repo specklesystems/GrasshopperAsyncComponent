@@ -1,104 +1,62 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{695D2B91-DDB6-416E-8A99-DDE6253DA7AA}</ProjectGuid>
+    <ProjectGuid>{114D5E49-AC13-47F7-A70E-B4289579F4E3}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>GrasshopperAsyncComponent</RootNamespace>
     <AssemblyName>GrasshopperAsyncComponent</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
     <TargetFrameworkProfile />
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
+    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\</OutputPath>
+    <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Eto, Version=2.5.0.0, Culture=neutral, PublicKeyToken=552281e97c755530, processorArchitecture=MSIL">
-      <HintPath>packages\RhinoCommon.6.29.20238.11501\lib\net45\Eto.dll</HintPath>
-    </Reference>
-    <Reference Include="GH_IO, Version=6.29.20238.11500, Culture=neutral, PublicKeyToken=6a29997d2e6b4f97, processorArchitecture=MSIL">
-      <HintPath>packages\Grasshopper.6.29.20238.11501\lib\net45\GH_IO.dll</HintPath>
-    </Reference>
-    <Reference Include="Grasshopper, Version=6.29.20238.11500, Culture=neutral, PublicKeyToken=dda4f5ec2cd80803, processorArchitecture=MSIL">
-      <HintPath>packages\Grasshopper.6.29.20238.11501\lib\net45\Grasshopper.dll</HintPath>
-    </Reference>
-    <Reference Include="Rhino.UI, Version=6.29.20238.11500, Culture=neutral, PublicKeyToken=552281e97c755530, processorArchitecture=MSIL">
-      <HintPath>packages\RhinoCommon.6.29.20238.11501\lib\net45\Rhino.UI.dll</HintPath>
-    </Reference>
-    <Reference Include="RhinoCommon, Version=6.29.20238.11500, Culture=neutral, PublicKeyToken=552281e97c755530, processorArchitecture=MSIL">
-      <HintPath>packages\RhinoCommon.6.29.20238.11501\lib\net45\RhinoCommon.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Base\GH_AsyncComponent.cs" />
-    <Compile Include="Info\GrasshopperAsyncComponentInfo.cs" />
-    <Compile Include="Base\WorkerInstance.cs" />
+    <Compile Include="GH_AsyncComponent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SampleImplementations\Sample_PrimeCalculatorAsyncComponent.cs" />
-    <Compile Include="SampleImplementations\Sample_UslessCyclesComponent.cs" />
+    <Compile Include="WorkerInstance.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <PackageReference Include="Grasshopper">
+      <Version>6.31.20315.17001</Version>
+    </PackageReference>
+    <PackageReference Include="RhinoCommon">
+      <Version>6.31.20315.17001</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
-  <PropertyGroup Condition="$([MSBuild]::IsOsPlatform('Windows'))">
-    <PostBuildEvent>Copy "$(TargetPath)" "$(TargetDir)$(ProjectName).gha"</PostBuildEvent>
-  </PropertyGroup>
-    <PropertyGroup Condition="$([MSBuild]::IsOsPlatform('OSX'))">
-    <PostBuildEvent>cp "$(TargetPath)" "$(TargetDir)$(ProjectName).gha"</PostBuildEvent>
-  </PropertyGroup>
-  <PropertyGroup>
-    <FallbackCulture>en-US</FallbackCulture>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <StartProgram>C:\Program Files\Rhino 6\System\Rhino.exe</StartProgram>
-    <StartArguments>
-    </StartArguments>
-    <StartAction>Program</StartAction>
-  </PropertyGroup>
-  <Import Project="packages\RhinoCommon.6.29.20238.11501\build\net45\RhinoCommon.targets" Condition="Exists('packages\RhinoCommon.6.29.20238.11501\build\net45\RhinoCommon.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('packages\RhinoCommon.6.29.20238.11501\build\net45\RhinoCommon.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\RhinoCommon.6.29.20238.11501\build\net45\RhinoCommon.targets'))" />
-    <Error Condition="!Exists('packages\Grasshopper.6.29.20238.11501\build\net45\Grasshopper.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Grasshopper.6.29.20238.11501\build\net45\Grasshopper.targets'))" />
-  </Target>
-  <Import Project="packages\Grasshopper.6.29.20238.11501\build\net45\Grasshopper.targets" Condition="Exists('packages\Grasshopper.6.29.20238.11501\build\net45\Grasshopper.targets')" />
+         Other similar extension points exist, see Microsoft.Common.targets.
+    <Target Name="BeforeBuild">
+    </Target>
+    <Target Name="AfterBuild">
+    </Target>
+    -->
 </Project>

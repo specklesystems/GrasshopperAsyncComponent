@@ -14,11 +14,7 @@ namespace GrasshopperAsyncComponent
   /// </summary>
   public abstract class GH_AsyncComponent : GH_Component
   {
-    public override Guid ComponentGuid { get => new Guid("5DBBD498-0326-4E25-83A5-424D8DC493D4"); }
-
-    protected override System.Drawing.Bitmap Icon { get => null; }
-
-    public override GH_Exposure Exposure => GH_Exposure.hidden;
+    public override Guid ComponentGuid => throw new Exception("ComponentGuid should be overriden in any descendant of GH_AsyncComponent!");
 
     //List<(string, GH_RuntimeMessageLevel)> Errors;
 
@@ -38,7 +34,7 @@ namespace GrasshopperAsyncComponent
 
     List<Task> Tasks;
 
-    List<CancellationTokenSource> CancelationSources;
+    public readonly List<CancellationTokenSource> CancellationSources;
 
     /// <summary>
     /// Set this property inside the constructor of your derived component. 
@@ -82,7 +78,7 @@ namespace GrasshopperAsyncComponent
       ProgressReports = new ConcurrentDictionary<string, double>();
 
       Workers = new List<WorkerInstance>();
-      CancelationSources = new List<CancellationTokenSource>();
+      CancellationSources = new List<CancellationTokenSource>();
       Tasks = new List<Task>();
     }
 
@@ -114,9 +110,9 @@ namespace GrasshopperAsyncComponent
     {
       if (State != 0 && SetData) return;
 
-      foreach (var source in CancelationSources) source.Cancel();
+      foreach (var source in CancellationSources) source.Cancel();
 
-      CancelationSources.Clear();
+      CancellationSources.Clear();
       Workers.Clear();
       ProgressReports.Clear();
       Tasks.Clear();
@@ -153,59 +149,52 @@ namespace GrasshopperAsyncComponent
           return;
         }
 
-        var CurrentWorker = BaseWorker.Duplicate();
-        if (CurrentWorker == null)
+        var currentWorker = BaseWorker.Duplicate();
+        if (currentWorker == null)
         {
           AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Could not get a worker instance.");
           return;
         }
 
         // Let the worker collect data.
-        CurrentWorker.GetData(DA, Params);
+        currentWorker.GetData(DA, Params);
 
         // Create the task
         var tokenSource = new CancellationTokenSource();
-        CurrentWorker.CancellationToken = tokenSource.Token;
-        CurrentWorker.Id = $"Worker-{DA.Iteration}";
+        currentWorker.CancellationToken = tokenSource.Token;
+        currentWorker.Id = $"Worker-{DA.Iteration}";
 
-        Task CurrentRun;
-        if (TaskCreationOptions != null)
-        {
-          CurrentRun = new Task(() => CurrentWorker.DoWork(ReportProgress, Done), tokenSource.Token, (TaskCreationOptions)TaskCreationOptions);
-        }
-        else
-        {
-          CurrentRun = new Task(() => CurrentWorker.DoWork(ReportProgress, Done), tokenSource.Token);
-        }
-        // Add cancelation source to our bag
-        CancelationSources.Add(tokenSource);
-
+        var currentRun = TaskCreationOptions != null 
+          ? new Task(() => currentWorker.DoWork(ReportProgress, Done), tokenSource.Token, (TaskCreationOptions)TaskCreationOptions) 
+          : new Task(() => currentWorker.DoWork(ReportProgress, Done), tokenSource.Token);
+        
+        // Add cancellation source to our bag
+        CancellationSources.Add(tokenSource);
+        
         // Add the worker to our list
-        Workers.Add(CurrentWorker);
+        Workers.Add(currentWorker);
 
-        Tasks.Add(CurrentRun);
+        Tasks.Add(currentRun);
 
         return;
       }
 
-      if (SetData)
-      {
-        if (Workers.Count > 0)
-          Workers[--State].SetData(DA);
+      if (!SetData) return;
+      
+      if (Workers.Count > 0)
+        Workers[--State].SetData(DA);
 
-        if (State == 0)
-        {
-          CancelationSources.Clear();
-          Workers.Clear();
-          ProgressReports.Clear();
-          Tasks.Clear();
+      if (State != 0) return;
+      
+      CancellationSources.Clear();
+      Workers.Clear();
+      ProgressReports.Clear();
+      Tasks.Clear();
 
-          SetData = false;
+      SetData = false;
 
-          Message = "Done";
-          OnDisplayExpired(true);
-        }
-      }
+      Message = "Done";
+      OnDisplayExpired(true);
     }
   }
 }

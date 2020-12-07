@@ -5,14 +5,15 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using GrasshopperAsyncComponent;
 
-namespace GrasshopperAsyncComponent.SampleImplementations
+namespace GrasshopperAsyncComponentDemo.SampleImplementations
 {
   public class Sample_UselessCyclesAsyncComponent : GH_AsyncComponent
   {
     public override Guid ComponentGuid { get => new Guid("DF2B93E2-052D-4BE4-BC62-90DC1F169BF6"); }
 
-    protected override System.Drawing.Bitmap Icon { get => null; }
+    protected override System.Drawing.Bitmap Icon { get => Properties.Resources.logo32; }
 
     public override GH_Exposure Exposure => GH_Exposure.primary;
 
