@@ -4,9 +4,9 @@ orbs:
   win: circleci/windows@2.2.0
 
 jobs:
-  build:
+  build-and-publish:
     executor: win/default
-
+  
     steps:
       - checkout
       - run:
@@ -17,6 +17,21 @@ jobs:
           command: msbuild GrasshopperAsyncComponent.sln /p:Configuration=Release
       - run:
           name: Pack NuGet
-          command: nuget pack GrasshopperAsyncComponent/GrasshopperAsyncComponent.csproj
+          command: cd GrasshopperAsyncComponent; nuget pack GrasshopperAsyncComponent.csproj -Prop Configuration=Release
+      - run:
+          name: Pack NuGet
+          command: nuget push ${NUGET_AUTH_TOKEN} -Source https://api.nuget.org/v3/index.json *.nupkg
 
 
+workflows:
+  publish:
+    jobs:
+      - build-and-publish:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+
+
+    
