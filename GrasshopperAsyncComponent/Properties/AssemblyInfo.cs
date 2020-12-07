@@ -5,9 +5,9 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("GrasshopperAsyncComponent")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Asyncronous Implementation of GH_Component for Grassshopper")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Speckle Systems")]
 [assembly: AssemblyProduct("GrasshopperAsyncComponent")]
 [assembly: AssemblyCopyright("Copyright ©  2020")]
 [assembly: AssemblyTrademark("")]
