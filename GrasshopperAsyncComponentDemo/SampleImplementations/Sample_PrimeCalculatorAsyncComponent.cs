@@ -13,7 +13,7 @@ namespace GrasshopperAsyncComponentDemo.SampleImplementations
   {
     public override Guid ComponentGuid { get => new Guid("22C612B0-2C57-47CE-B9FE-E10621F18933"); }
 
-    protected override System.Drawing.Bitmap Icon { get => null; }
+    protected override System.Drawing.Bitmap Icon { get => Properties.Resources.logo32; }
 
     public override GH_Exposure Exposure => GH_Exposure.primary;
 
