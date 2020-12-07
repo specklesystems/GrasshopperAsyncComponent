@@ -2,7 +2,7 @@
 using System.Drawing;
 using Grasshopper.Kernel;
 
-namespace GrasshopperAsyncComponent
+namespace GrasshopperAsyncComponentDemo
 {
   public class GrasshopperAsyncComponentInfo : GH_AssemblyInfo
   {
@@ -10,7 +10,7 @@ namespace GrasshopperAsyncComponent
     {
       get
       {
-        return "GrasshopperAsyncComponent";
+        return "GrasshopperAsyncComponentDemo";
       }
     }
     public override Bitmap Icon

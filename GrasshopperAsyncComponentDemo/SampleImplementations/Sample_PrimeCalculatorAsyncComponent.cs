@@ -5,8 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using GrasshopperAsyncComponent;
 
-namespace GrasshopperAsyncComponent.SampleImplementations
+namespace GrasshopperAsyncComponentDemo.SampleImplementations
 {
   public class Sample_PrimeCalculatorAsyncComponent : GH_AsyncComponent
   {

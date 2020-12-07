@@ -1,14 +1,15 @@
 ﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("GrasshopperAsyncComponent")]
+[assembly: AssemblyTitle("GrasshopperAsyncComponentDemo")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("GrasshopperAsyncComponent")]
+[assembly: AssemblyCompany("Aec systems")]
+[assembly: AssemblyProduct("GrasshopperAsyncComponentDemo")]
 [assembly: AssemblyCopyright("Copyright ©  2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -19,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("114D5E49-AC13-47F7-A70E-B4289579F4E3")]
+[assembly: Guid("695d2b91-ddb6-416e-8a99-dde6253da7aa")]
 
 // Version information for an assembly consists of the following four values:
 //

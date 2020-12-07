@@ -14,11 +14,7 @@ namespace GrasshopperAsyncComponent
   /// </summary>
   public abstract class GH_AsyncComponent : GH_Component
   {
-    public override Guid ComponentGuid { get => new Guid("5DBBD498-0326-4E25-83A5-424D8DC493D4"); }
-
-    protected override System.Drawing.Bitmap Icon { get => null; }
-
-    public override GH_Exposure Exposure => GH_Exposure.hidden;
+    public override Guid ComponentGuid => throw new Exception("ComponentGuid should be overriden in any descendant of GH_AsyncComponent!");
 
     //List<(string, GH_RuntimeMessageLevel)> Errors;
 
