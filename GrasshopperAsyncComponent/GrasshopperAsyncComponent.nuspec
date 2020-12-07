@@ -4,9 +4,9 @@
     <id>GrasshopperAsyncComponent</id>
     <version>1.0.0.0</version>
     <title>GrasshopperAsyncComponent</title>
-    <authors>$author$</authors>
+    <authors>Speckle Systems</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <license type="expression">Apache 2.0</license>
+    <license type="expression">Apache-2.0</license>
     <projectUrl>https://github.com/specklesystems/GrasshopperAsyncComponent</projectUrl>
     <iconUrl>http://icon_url_here_or_delete_this_line/</iconUrl>
     <description>Jankless Grasshopper Component</description>

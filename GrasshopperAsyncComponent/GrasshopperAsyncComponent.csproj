@@ -12,7 +12,6 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
-    <Version>1.0.0.0</Version>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -45,8 +44,12 @@
     <Compile Include="WorkerInstance.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Grasshopper" Version="6.31.20315.17001" />
-    <PackageReference Include="RhinoCommon" Version="6.31.20315.17001" />
+    <PackageReference Include="Grasshopper">
+      <Version>6.31.20315.17001</Version>
+    </PackageReference>
+    <PackageReference Include="RhinoCommon">
+      <Version>6.31.20315.17001</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
