@@ -1,0 +1,22 @@
+﻿version: 2.1
+
+orbs:
+  win: circleci/windows@2.2.0
+
+jobs:
+  build:
+    executor: win/default
+
+    steps:
+      - checkout
+      - run:
+          name: Restore packages
+          command: nuget restore GrasshopperAsyncComponent.sln
+      - run:
+          name: Build solution
+          command: msbuild GrasshopperAsyncComponent.sln /p:Configuration=Release
+      - run:
+          name: Pack NuGet
+          command: nuget pack GrasshopperAsyncComponent/GrasshopperAsyncComponent.csproj
+
+
