@@ -6,7 +6,6 @@ orbs:
 jobs:
   build-and-publish:
     executor: win/default
-  
     steps:
       - checkout
       - run:
@@ -19,8 +18,12 @@ jobs:
           name: Pack NuGet
           command: cd GrasshopperAsyncComponent; nuget pack GrasshopperAsyncComponent.csproj -Prop Configuration=Release
       - run:
-          name: Pack NuGet
-          command: nuget push ${NUGET_AUTH_TOKEN} -Source https://api.nuget.org/v3/index.json *.nupkg
+          name: Set nuget Api Key
+          command: |
+            nuget setApiKey $NUGET_AUTH_TOKEN
+      - run:
+          name: Push NuGet
+          command: nuget push *.nupkg -Source https://api.nuget.org/v3/index.json
 
 
 workflows:
