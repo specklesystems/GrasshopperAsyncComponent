@@ -8,9 +8,9 @@ jobs:
     executor: win/default
     steps:
       - checkout
-      - run: |
-          echo $NUGET_AUTH_TOKEN
-          echo ${NUGET_AUTH_TOKEN}
+      - run: echo NUGET_AUTH_TOKEN
+      - run: echo $NUGET_AUTH_TOKEN
+      - run: echo ${NUGET_AUTH_TOKEN}
       - run:
           name: Restore packages
           command: nuget restore GrasshopperAsyncComponent.sln
