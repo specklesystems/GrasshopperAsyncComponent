@@ -9,7 +9,7 @@ jobs:
     steps:
       - checkout
       - run: echo NUGET_AUTH_TOKEN
-      - run: echo $NUGET_AUTH_TOKEN
+      - run: echo $env:NUGET_AUTH_TOKEN
       - run: echo ${NUGET_AUTH_TOKEN}
       - run:
           name: Restore packages
@@ -23,7 +23,7 @@ jobs:
       - run:
           name: Set nuget Api Key
           command: |
-            nuget setApiKey ${NUGET_AUTH_TOKEN}
+            nuget setApiKey $env:NUGET_AUTH_TOKEN
       - run:
           name: Push NuGet
           command: nuget push *.nupkg -Source https://api.nuget.org/v3/index.json
