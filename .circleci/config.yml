@@ -4,7 +4,7 @@ orbs:
   win: circleci/windows@2.2.0
 
 jobs:
-  build:
+  publish_nuget:
     executor: win/default
     steps:
       - checkout
@@ -14,9 +14,6 @@ jobs:
       - run:
           name: Build solution
           command: msbuild GrasshopperAsyncComponent.sln /p:Configuration=Release
-  publish:
-    executor: win/default
-    steps:
       - run:
           name: Pack NuGet
           command: cd GrasshopperAsyncComponent; nuget pack GrasshopperAsyncComponent.csproj -Prop Configuration=Release
@@ -28,13 +25,7 @@ jobs:
 workflows:
   publish:
     jobs:
-      - build:
-          filters:
-            tags:
-              only: /^v.*/
-      - publish:
-          requires:
-            - build
+      - publish_nuget:
           filters:
             tags:
               only: /^v.*/
