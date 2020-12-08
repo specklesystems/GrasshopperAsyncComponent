@@ -8,6 +8,9 @@ jobs:
     executor: win/default
     steps:
       - checkout
+      - run: |
+          echo $NUGET_AUTH_TOKEN
+          echo ${NUGET_AUTH_TOKEN}
       - run:
           name: Restore packages
           command: nuget restore GrasshopperAsyncComponent.sln
@@ -20,7 +23,7 @@ jobs:
       - run:
           name: Set nuget Api Key
           command: |
-            nuget setApiKey $NUGET_AUTH_TOKEN
+            nuget setApiKey ${NUGET_AUTH_TOKEN}
       - run:
           name: Push NuGet
           command: nuget push *.nupkg -Source https://api.nuget.org/v3/index.json
@@ -29,12 +32,6 @@ jobs:
 workflows:
   publish:
     jobs:
-      - build-and-publish:
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
-
+      - build-and-publish
 
     
