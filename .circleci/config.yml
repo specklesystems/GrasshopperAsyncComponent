@@ -4,34 +4,42 @@ orbs:
   win: circleci/windows@2.2.0
 
 jobs:
-  build-and-publish:
+  build:
     executor: win/default
     steps:
       - checkout
-      - run: echo NUGET_AUTH_TOKEN
-      - run: echo $env:NUGET_AUTH_TOKEN
-      - run: echo ${NUGET_AUTH_TOKEN}
       - run:
           name: Restore packages
           command: nuget restore GrasshopperAsyncComponent.sln
       - run:
           name: Build solution
           command: msbuild GrasshopperAsyncComponent.sln /p:Configuration=Release
+  publish:
+    executor: win/default
+    steps:
       - run:
           name: Pack NuGet
           command: cd GrasshopperAsyncComponent; nuget pack GrasshopperAsyncComponent.csproj -Prop Configuration=Release
       - run:
-          name: Set nuget Api Key
-          command: |
-            nuget setApiKey $env:NUGET_AUTH_TOKEN
-      - run:
           name: Push NuGet
-          command: nuget push *.nupkg -Source https://api.nuget.org/v3/index.json
+          command: nuget push *.nupkg -Source https://api.nuget.org/v3/index.json -ApiKey $env:NUGET_AUTH_TOKEN -SkipDuplicate
 
 
 workflows:
   publish:
     jobs:
-      - build-and-publish
+      - build:
+          filters:
+            tags:
+              only: /^v.*/
+      - publish:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+
 
     
