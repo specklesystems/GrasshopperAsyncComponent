@@ -16,7 +16,7 @@ jobs:
           command: msbuild GrasshopperAsyncComponent.sln /p:Configuration=Release
       - run:
           name: Pack NuGet
-          command: cd GrasshopperAsyncComponent; nuget pack GrasshopperAsyncComponent.csproj -Prop Configuration=Release
+          command: cd GrasshopperAsyncComponent; nuget pack GrasshopperAsyncComponent.csproj -Prop Configuration=Release -Symbols -SymbolPackageFormat snupkg
       - run:
           name: Push NuGet
           command: cd GrasshopperAsyncComponent; nuget push *.nupkg -Source https://api.nuget.org/v3/index.json -ApiKey $env:NUGET_AUTH_TOKEN -SkipDuplicate
