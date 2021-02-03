@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{114D5E49-AC13-47F7-A70E-B4289579F4E3}</ProjectGuid>
+    <ProjectGuid>{695D2B91-DDB6-416E-8A99-DDE6253DA7AA}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>GrasshopperAsyncComponent</RootNamespace>
@@ -45,10 +45,12 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Grasshopper">
-      <Version>6.29.20238.11501</Version>
+      <Version>6.33.20343.16431</Version>
+      <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="RhinoCommon">
-      <Version>6.29.20238.11501</Version>
+      <Version>6.33.20343.16431</Version>
+      <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
