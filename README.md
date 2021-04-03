@@ -15,6 +15,7 @@ Looks nice, doesn't it? Notice that the solution runs "eagerly" - every time the
 
 - **Grasshopper and Rhino are still responsive!**
 - **There's progress reporting!** (personally I hate waiting for Gh to unfreeze...).
+- **Thread safe**: 99% of the times this won't explode in your face. It still might though!
 
 ### Approach
 
