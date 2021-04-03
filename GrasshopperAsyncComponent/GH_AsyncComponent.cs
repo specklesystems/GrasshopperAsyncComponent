@@ -86,24 +86,6 @@ namespace GrasshopperAsyncComponent
       Tasks = new List<Task>();
     }
 
-    public void RequestCancellation()
-    {
-      foreach(var token in CancellationSources)
-      {
-        token.Cancel();
-      }
-
-      CancellationSources.Clear();
-      Workers.Clear();
-      ProgressReports.Clear();
-      Tasks.Clear();
-
-      Interlocked.Exchange(ref SetData, 0);
-
-      Message = "Done";
-      OnDisplayExpired(true);
-    }
-
     public virtual void DisplayProgress(object sender, System.Timers.ElapsedEventArgs e)
     {
       if (Workers.Count == 0 || ProgressReports.Values.Count == 0)
