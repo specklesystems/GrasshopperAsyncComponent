@@ -46,6 +46,23 @@ Q: Does this component use all my cores? A: OH YES. It goes WROOOM.
 
 ![image](https://user-images.githubusercontent.com/7696515/95597125-29310900-0a46-11eb-99ce-663b34506a7a.png)
 
+Q: Can I cancel a stuff that's in progress?
+
+A: Yes. The `GH_AsyncComponent` class now exposes the `RequestCancellation()` method, which you can invoke from a custom menu action, or however you want. Note, to properly handle this and ensure the component's inner flow state is properly reset, when respecting the cancellation in your component, you should call the `Done()` function before returning from `DoWork()`. E.g.:
+
+```cs
+
+public override void DoWork(Action<string, double> ReportProgress, Action Done)
+{
+  // note: call done from inside DoWork(), then return abruptly. 
+  if (CancellationToken.IsCancellationRequested) { Done(); return; } 
+  // more code
+}
+
+```
+
+
+
 ### Debugging
 
 Quite easy:

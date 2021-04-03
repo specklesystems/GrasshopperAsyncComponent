@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using GrasshopperAsyncComponent;
+using System.Windows.Forms;
 
 namespace GrasshopperAsyncComponentDemo.SampleImplementations
 {
@@ -31,6 +32,15 @@ namespace GrasshopperAsyncComponentDemo.SampleImplementations
     {
       pManager.AddTextParameter("Output", "O", "Nothing really interesting.", GH_ParamAccess.item);
     }
+
+    protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
+    {
+      base.AppendAdditionalComponentMenuItems(menu);
+      Menu_AppendItem(menu, "Cancel", (s, e) =>
+      {
+        this.RequestCancellation();
+      });
+    }
   }
 
   public class UselessCyclesWorker : WorkerInstance
@@ -42,7 +52,7 @@ namespace GrasshopperAsyncComponentDemo.SampleImplementations
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
       // Checking for cancellation
-      if (CancellationToken.IsCancellationRequested) return;
+      if (CancellationToken.IsCancellationRequested) { Done(); return; }
 
       for (int i = 0; i <= MaxIterations; i++)
       {
@@ -53,7 +63,7 @@ namespace GrasshopperAsyncComponentDemo.SampleImplementations
         ReportProgress(Id, ((double)(i + 1) / (double)MaxIterations));
 
         // Checking for cancellation
-        if (CancellationToken.IsCancellationRequested) return;
+        if (CancellationToken.IsCancellationRequested) { Done(); return; }
       }
 
       Done();
