@@ -52,7 +52,7 @@ namespace GrasshopperAsyncComponentDemo.SampleImplementations
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
       // Checking for cancellation
-      if (CancellationToken.IsCancellationRequested) return;
+      if (CancellationToken.IsCancellationRequested) { Done(); return; }
 
       for (int i = 0; i <= MaxIterations; i++)
       {
@@ -63,7 +63,7 @@ namespace GrasshopperAsyncComponentDemo.SampleImplementations
         ReportProgress(Id, ((double)(i + 1) / (double)MaxIterations));
 
         // Checking for cancellation
-        if (CancellationToken.IsCancellationRequested) return;
+        if (CancellationToken.IsCancellationRequested) { Done(); return; }
       }
 
       Done();

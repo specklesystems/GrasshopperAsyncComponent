@@ -31,7 +31,15 @@ namespace GrasshopperAsyncComponentDemo.SampleImplementations
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
       pManager.AddNumberParameter("Output", "O", "The n-th prime number.", GH_ParamAccess.item);
+    }
 
+    protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
+    {
+      base.AppendAdditionalComponentMenuItems(menu);
+      Menu_AppendItem(menu, "Cancel", (s, e) =>
+      {
+        this.RequestCancellation();
+      });
     }
 
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
@@ -54,7 +62,7 @@ namespace GrasshopperAsyncComponentDemo.SampleImplementations
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
       // 👉 Checking for cancellation!
-      if (CancellationToken.IsCancellationRequested) return;
+      if (CancellationToken.IsCancellationRequested) { Done(); return; }
 
       int count = 0;
       long a = 2;
@@ -63,14 +71,14 @@ namespace GrasshopperAsyncComponentDemo.SampleImplementations
       while (count < TheNthPrime)
       {
         // 👉 Checking for cancellation!
-        if (CancellationToken.IsCancellationRequested) return;
+        if (CancellationToken.IsCancellationRequested) { Done(); return; }
 
         long b = 2;
         int prime = 1;// to check if found a prime
         while (b * b <= a)
         {
           // 👉 Checking for cancellation!
-          if (CancellationToken.IsCancellationRequested) return;
+          if (CancellationToken.IsCancellationRequested) { Done(); return; }
 
           if (a % b == 0)
           {
@@ -108,7 +116,7 @@ namespace GrasshopperAsyncComponentDemo.SampleImplementations
     public override void SetData(IGH_DataAccess DA)
     {
       // 👉 Checking for cancellation!
-      if (CancellationToken.IsCancellationRequested) return;
+      if (CancellationToken.IsCancellationRequested) { return; }
 
       DA.SetData(0, ThePrime);
     }
