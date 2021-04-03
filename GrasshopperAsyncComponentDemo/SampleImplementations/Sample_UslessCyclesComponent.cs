@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using GrasshopperAsyncComponent;
+using System.Windows.Forms;
 
 namespace GrasshopperAsyncComponentDemo.SampleImplementations
 {
@@ -30,6 +31,15 @@ namespace GrasshopperAsyncComponentDemo.SampleImplementations
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
       pManager.AddTextParameter("Output", "O", "Nothing really interesting.", GH_ParamAccess.item);
+    }
+
+    public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
+    {
+      base.AppendAdditionalMenuItems(menu);
+      Menu_AppendItem(menu, "Cancel", (s, e) =>
+      {
+        RequestCancellation();
+      });
     }
   }
 
