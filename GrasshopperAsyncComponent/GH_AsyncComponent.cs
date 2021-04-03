@@ -88,7 +88,7 @@ namespace GrasshopperAsyncComponent
 
     public virtual void DisplayProgress(object sender, System.Timers.ElapsedEventArgs e)
     {
-      if (Workers.Count == 0)
+      if (Workers.Count == 0 || ProgressReports.Values.Count == 0)
       {
         return;
       }
@@ -226,5 +226,24 @@ namespace GrasshopperAsyncComponent
       Message = "Done";
       OnDisplayExpired(true);
     }
+
+    public void RequestCancellation()
+    {
+      foreach (var source in CancellationSources)
+      {
+        source.Cancel();
+      }
+
+      CancellationSources.Clear();
+      Workers.Clear();
+      ProgressReports.Clear();
+      Tasks.Clear();
+
+      Interlocked.Exchange(ref State, 0);
+      Interlocked.Exchange(ref SetData, 0);
+      Message = "Cancelled";
+      OnDisplayExpired(true);
+    }
+
   }
 }

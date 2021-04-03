@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using GrasshopperAsyncComponent;
+using System.Windows.Forms;
 
 namespace GrasshopperAsyncComponentDemo.SampleImplementations
 {
@@ -31,6 +32,15 @@ namespace GrasshopperAsyncComponentDemo.SampleImplementations
     {
       pManager.AddNumberParameter("Output", "O", "The n-th prime number.", GH_ParamAccess.item);
 
+    }
+
+    public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
+    {
+      base.AppendAdditionalMenuItems(menu);
+      Menu_AppendItem(menu, "Cancel", (s, e) =>
+      {
+        RequestCancellation();
+      });
     }
   }
 
