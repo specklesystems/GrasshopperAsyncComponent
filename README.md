@@ -15,6 +15,7 @@ Looks nice, doesn't it? Notice that the solution runs "eagerly" - every time the
 
 - **Grasshopper and Rhino are still responsive!**
 - **There's progress reporting!** (personally I hate waiting for Gh to unfreeze...).
+- **Thread safe**: 99% of the times this won't explode in your face. It still might though!
 
 ### Approach
 
@@ -46,18 +47,20 @@ Q: Does this component use all my cores? A: OH YES. It goes WROOOM.
 
 ![image](https://user-images.githubusercontent.com/7696515/95597125-29310900-0a46-11eb-99ce-663b34506a7a.png)
 
-Q: Can I cancel a stuff that's in progress?
+Q: Can I enable cancellation of a longer running task? 
 
-A: Yes. The `GH_AsyncComponent` class now exposes the `RequestCancellation()` method, which you can invoke from a custom menu action, or however you want. Note, to properly handle this and ensure the component's inner flow state is properly reset, when respecting the cancellation in your component, you should call the `Done()` function before returning from `DoWork()`. E.g.:
+A: Yes, now you can! In your component, just add a right click menu action like so:
 
 ```cs
 
-public override void DoWork(Action<string, double> ReportProgress, Action Done)
-{
-  // note: call done from inside DoWork(), then return abruptly. 
-  if (CancellationToken.IsCancellationRequested) { Done(); return; } 
-  // more code
-}
+    public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
+    {
+      base.AppendAdditionalMenuItems(menu);
+      Menu_AppendItem(menu, "Cancel", (s, e) =>
+      {
+        RequestCancellation();
+      });
+    }
 
 ```
 

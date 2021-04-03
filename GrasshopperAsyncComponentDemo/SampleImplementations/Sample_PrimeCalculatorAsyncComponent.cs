@@ -41,6 +41,15 @@ namespace GrasshopperAsyncComponentDemo.SampleImplementations
         this.RequestCancellation();
       });
     }
+
+    public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
+    {
+      base.AppendAdditionalMenuItems(menu);
+      Menu_AppendItem(menu, "Cancel", (s, e) =>
+      {
+        RequestCancellation();
+      });
+    }
   }
 
   public class PrimeCalculatorWorker : WorkerInstance

@@ -33,12 +33,12 @@ namespace GrasshopperAsyncComponentDemo.SampleImplementations
       pManager.AddTextParameter("Output", "O", "Nothing really interesting.", GH_ParamAccess.item);
     }
 
-    protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
+    public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
     {
-      base.AppendAdditionalComponentMenuItems(menu);
+      base.AppendAdditionalMenuItems(menu);
       Menu_AppendItem(menu, "Cancel", (s, e) =>
       {
-        this.RequestCancellation();
+        RequestCancellation();
       });
     }
   }
