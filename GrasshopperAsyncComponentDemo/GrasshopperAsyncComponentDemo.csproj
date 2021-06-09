@@ -55,8 +55,8 @@
     <Compile Include="SampleImplementations\Sample_UslessCyclesComponent.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Grasshopper" Version="6.33.20343.16431" />
-    <PackageReference Include="RhinoCommon" Version="6.33.20343.16431" />
+    <PackageReference Include="Grasshopper" Version="6.28.20199.17141" />
+    <PackageReference Include="RhinoCommon" Version="6.28.20199.17141" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GrasshopperAsyncComponent\GrasshopperAsyncComponent.csproj">

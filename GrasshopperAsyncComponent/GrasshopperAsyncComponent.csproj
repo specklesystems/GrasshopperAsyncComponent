@@ -49,11 +49,11 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Grasshopper">
-      <Version>6.33.20343.16431</Version>
+      <Version>6.28.20199.17141</Version>
       <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="RhinoCommon">
-      <Version>6.33.20343.16431</Version>
+      <Version>6.28.20199.17141</Version>
       <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
