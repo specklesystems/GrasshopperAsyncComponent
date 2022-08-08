@@ -1,11 +1,11 @@
-name: Update issue Status
+name: Move new issues into Project
 
 on:
   issues:
-    types: [closed]
+    types: [opened]
 
 jobs:
-  update_issue:
+  track_issue:
     runs-on: ubuntu-latest
     steps:
       - name: Get project data
@@ -33,13 +33,7 @@ jobs:
           echo 'PROJECT_ID='$(jq '.data.organization.projectNext.id' project_data.json) >> $GITHUB_ENV
           echo 'STATUS_FIELD_ID='$(jq '.data.organization.projectNext.fields.nodes[] | select(.name== "Status") | .id' project_data.json) >> $GITHUB_ENV
 
-          echo "$PROJECT_ID"
-          echo "$STATUS_FIELD_ID"
-
-          echo 'DONE_ID='$(jq '.data.organization.projectNext.fields.nodes[] | select(.name== "Status") | .settings | fromjson | .options[] | select(.name== "Done") | .id' project_data.json) >> $GITHUB_ENV
-          echo "$DONE_ID"
-
-      - name: Add Issue to project #it's already in the project, but we do this to get its node id!
+      - name: Add Issue to project
         env:
           GITHUB_TOKEN: ${{secrets.GHPROJECT_TOKEN}}
           ISSUE_ID: ${{ github.event.issue.node_id }}
@@ -54,24 +48,3 @@ jobs:
             }' -f project=$PROJECT_ID -f id=$ISSUE_ID --jq '.data.addProjectNextItem.projectNextItem.id')"
 
           echo 'ITEM_ID='$item_id >> $GITHUB_ENV
-
-      - name: Update Status
-        env:
-          GITHUB_TOKEN: ${{secrets.GHPROJECT_TOKEN}}
-          ISSUE_ID: ${{ github.event.issue.node_id }}
-        run: |
-          gh api graphql --header 'GraphQL-Features: projects_next_graphql' -f query='
-            mutation($project:ID!, $status:ID!, $id:ID!, $value:String!) {
-              set_status: updateProjectNextItemField(
-                input: {
-                  projectId: $project
-                  itemId: $id
-                  fieldId: $status
-                  value: $value
-                }
-              ) {
-                projectNextItem {
-                  id
-                }
-              }
-            }' -f project=$PROJECT_ID -f status=$STATUS_FIELD_ID -f id=$ITEM_ID -f value=${{ env.DONE_ID }}
