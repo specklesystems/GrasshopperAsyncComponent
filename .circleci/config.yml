@@ -31,5 +31,5 @@ workflows:
               only: /^v.*/
             branches:
               ignore: /.*/
-            context: nuget
+          context: nuget
     
