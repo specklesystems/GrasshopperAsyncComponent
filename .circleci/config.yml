@@ -19,7 +19,7 @@ jobs:
           command: cd GrasshopperAsyncComponent; nuget pack GrasshopperAsyncComponent.csproj -Prop Configuration=Release -Symbols -SymbolPackageFormat snupkg
       - run:
           name: Push NuGet
-          command: cd GrasshopperAsyncComponent; nuget push *.nupkg -Source https://api.nuget.org/v3/index.json -ApiKey $env:NUGET_AUTH_TOKEN -SkipDuplicate
+          command: cd GrasshopperAsyncComponent; nuget push *.nupkg -Source https://api.nuget.org/v3/index.json -ApiKey $env:NUGET_APIKEY -SkipDuplicate
 
 
 workflows:
@@ -31,6 +31,5 @@ workflows:
               only: /^v.*/
             branches:
               ignore: /.*/
-
-
+          context: nuget
     
