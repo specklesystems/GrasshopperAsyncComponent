@@ -14,6 +14,8 @@ jobs:
             $semver = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "0.0.999" } else { $env:CIRCLE_TAG }
             $ver = if($semver.Contains('-')) {$semver.Split("-")[0] } else { $semver }
             $version = "$($ver).$($env:WORKFLOW_NUM)"
+          environment:
+            WORKFLOW_NUM: << pipeline.number >>
       - run:
           name: Restore packages
           command: nuget restore GrasshopperAsyncComponent.sln
