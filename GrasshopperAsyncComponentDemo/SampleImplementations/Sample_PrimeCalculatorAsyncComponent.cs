@@ -1,12 +1,7 @@
 ﻿using Grasshopper.Kernel;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using GrasshopperAsyncComponent;
 using System.Windows.Forms;
+using GrasshopperAsyncComponent;
 
 namespace GrasshopperAsyncComponentDemo.SampleImplementations
 {
