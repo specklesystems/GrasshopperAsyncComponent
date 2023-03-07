@@ -19,7 +19,7 @@ jobs:
           command: dotnet restore GrasshopperAsyncComponent.sln
       - run:
           name: Build solution
-          command: dotnet build GrasshopperAsyncComponent.sln --no-restore -c Release /p:Version=$TAG
+          command: dotnet build GrasshopperAsyncComponent.sln --no-restore -c Release /p:Version=$TAG  /p:AssemblyVersionNumber=$TAG /p:AssemblyInformationalVersion=$TAG
   
   publish_nuget:
     executor: win/default
