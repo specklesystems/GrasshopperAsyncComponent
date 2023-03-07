@@ -19,7 +19,7 @@ jobs:
             WORKFLOW_NUM: << pipeline.number >>
       - run:
           name: Restore packages
-          command: dotnet restore restore GrasshopperAsyncComponent.sln
+          command: dotnet restore GrasshopperAsyncComponent.sln
       - run:
           name: Build solution
           command: dotnet build GrasshopperAsyncComponent.sln --no-restore -c Release /p:Version=$TAG
