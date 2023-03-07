@@ -14,7 +14,7 @@ jobs:
       - run:
           name: Build solution
           command: |
-            $TAG = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "0.0.$($env:WORKFLOW_NUM)-ci" } else { $env:CIRCLE_TAG }
+            $TAG = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "0.999.$($env:WORKFLOW_NUM)-ci" } else { $env:CIRCLE_TAG }
             dotnet build GrasshopperAsyncComponent.sln --no-restore -c Release /p:Version=$TAG  /p:AssemblyVersionNumber=$TAG /p:AssemblyInformationalVersion=$TAG
           environment:
             WORKFLOW_NUM: << pipeline.number >>
@@ -23,20 +23,15 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Set version env var
-          command: |
-            $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "0.0.999" } else { $env:CIRCLE_TAG }
-          environment:
-            WORKFLOW_NUM: << pipeline.number >>
-      - run:
           name: Restore packages
-          command: nuget restore GrasshopperAsyncComponent.sln
+          command: dotnet restore GrasshopperAsyncComponent.sln
       - run:
           name: Build solution
-          command: msbuild GrasshopperAsyncComponent.sln /p:Configuration=Release /p:Version=$tag
-      - run:
-          name: Pack NuGet
-          command: nuget pack GrasshopperAsyncComponent/GrasshopperAsyncComponent.csproj -Prop Configuration=Release -Symbols -SymbolPackageFormat snupkg
+          command: |
+            $TAG = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "0.999.$($env:WORKFLOW_NUM)-ci" } else { $env:CIRCLE_TAG }
+            dotnet build GrasshopperAsyncComponent.sln --no-restore -c Release /p:Version=$TAG  /p:AssemblyVersionNumber=$TAG /p:AssemblyInformationalVersion=$TAG
+          environment:
+            WORKFLOW_NUM: << pipeline.number >>
       - run:
           name: Push NuGet
           command: nuget push *.nupkg -Source https://api.nuget.org/v3/index.json -ApiKey $env:NUGET_APIKEY -SkipDuplicate
@@ -51,7 +46,7 @@ workflows:
       - publish_nuget:
           filters:
             tags:
-              only: /^v.*/
+              only: /.*/
             branches:
               ignore: /.*/
           context: nuget
