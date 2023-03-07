@@ -21,6 +21,10 @@
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/specklesystems/GrasshopperAsyncComponent</PackageProjectUrl>
     <PackageTags>grasshopper rhino mcneel gh_component</PackageTags>
+
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
   
   <ItemGroup>

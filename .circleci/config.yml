@@ -4,6 +4,24 @@ orbs:
   win: circleci/windows@2.2.0
 
 jobs:
+  build:
+    docker:
+      - image: mcr.microsoft.com/dotnet/sdk:6.0
+  steps:
+    - checkout
+    - run:
+        name: Set version env var
+        command: |
+          TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "'0.0.999'-ci.$WORKFLOW_NUM"; fi;)
+        environment:
+          WORKFLOW_NUM: << pipeline.number >>
+    - run:
+        name: Restore packages
+        command: dotnet restore restore GrasshopperAsyncComponent.sln
+    - run:
+        name: Build solution
+        command: dotnet build GrasshopperAsyncComponent.sln --no-restore -c Release /p:Version=$TAG
+  
   publish_nuget:
     executor: win/default
     steps:
@@ -11,9 +29,7 @@ jobs:
       - run:
           name: Set version env var
           command: |
-            $semver = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "0.0.999" } else { $env:CIRCLE_TAG }
-            $ver = if($semver.Contains('-')) {$semver.Split("-")[0] } else { $semver }
-            $version = "$($ver).$($env:WORKFLOW_NUM)"
+            $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "0.0.999" } else { $env:CIRCLE_TAG }
           environment:
             WORKFLOW_NUM: << pipeline.number >>
       - run:
@@ -21,17 +37,18 @@ jobs:
           command: nuget restore GrasshopperAsyncComponent.sln
       - run:
           name: Build solution
-          command: msbuild GrasshopperAsyncComponent.sln /p:Configuration=Release /p:AssemblyVersionNumber=$version /p:AssemblyInformationalVersion=$semver /p:Version=$semver
+          command: msbuild GrasshopperAsyncComponent.sln /p:Configuration=Release /p:Version=$tag
       - run:
           name: Pack NuGet
-          command: cd GrasshopperAsyncComponent; nuget pack GrasshopperAsyncComponent.csproj -Prop Configuration=Release -Symbols -SymbolPackageFormat snupkg
+          command: nuget pack GrasshopperAsyncComponent/GrasshopperAsyncComponent.csproj -Prop Configuration=Release -Symbols -SymbolPackageFormat snupkg
       - run:
           name: Push NuGet
-          command: cd GrasshopperAsyncComponent; nuget push *.nupkg -Source https://api.nuget.org/v3/index.json -ApiKey $env:NUGET_APIKEY -SkipDuplicate
+          command: nuget push *.nupkg -Source https://api.nuget.org/v3/index.json -ApiKey $env:NUGET_APIKEY -SkipDuplicate
 
 workflows:
   publish:
     jobs:
+      - build
       - publish_nuget:
           filters:
             tags:
