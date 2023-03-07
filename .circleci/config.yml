@@ -9,20 +9,15 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Set version env var
-          command: |
-            $TAG = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "0.0.$($env:WORKFLOW_NUM)-ci" } else { $env:CIRCLE_TAG }
-          environment:
-            WORKFLOW_NUM: << pipeline.number >>
-      - run:
           name: Restore packages
           command: dotnet restore GrasshopperAsyncComponent.sln
       - run:
           name: Build solution
           command: |
-            $($TAG)
+            $TAG = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "0.0.$($env:WORKFLOW_NUM)-ci" } else { $env:CIRCLE_TAG }
             dotnet build GrasshopperAsyncComponent.sln --no-restore -c Release /p:Version=$TAG  /p:AssemblyVersionNumber=$TAG /p:AssemblyInformationalVersion=$TAG
-  
+          environment:
+            WORKFLOW_NUM: << pipeline.number >>
   publish_nuget:
     executor: win/default
     steps:
