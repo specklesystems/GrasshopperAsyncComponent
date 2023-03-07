@@ -47,7 +47,8 @@ jobs:
 workflows:
   build:
     jobs:
-      - build
+      - build:
+          context: github-dev-bot
   publish:
     jobs:
       - publish_nuget:
