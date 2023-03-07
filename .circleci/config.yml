@@ -7,14 +7,13 @@ commands:
   
 jobs:
   build:
-    docker:
-      - image: mcr.microsoft.com/dotnet/sdk:6.0
+    executor: win/default
     steps:
       - checkout
       - run:
           name: Set version env var
           command: |
-            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "'0.0.999'-ci.$WORKFLOW_NUM"; fi;)
+            $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "0.0.$($env:WORKFLOW_NUM)-ci" } else { $env:CIRCLE_TAG }
           environment:
             WORKFLOW_NUM: << pipeline.number >>
       - run:
