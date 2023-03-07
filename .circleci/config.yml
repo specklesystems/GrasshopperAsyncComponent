@@ -1,10 +1,8 @@
 ﻿version: 2.1
 
 orbs:
-  win: circleci/windows@2.2.0
+  win: circleci/windows@5.0.0
 
-commands:
-  
 jobs:
   build:
     executor: win/default
@@ -47,9 +45,11 @@ jobs:
           command: nuget push *.nupkg -Source https://api.nuget.org/v3/index.json -ApiKey $env:NUGET_APIKEY -SkipDuplicate
 
 workflows:
-  publish:
+  build:
     jobs:
       - build
+  publish:
+    jobs:
       - publish_nuget:
           filters:
             tags:
