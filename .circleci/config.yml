@@ -7,14 +7,11 @@ jobs:
   build:
     executor: win/default
     steps:
-      - add_ssh_keys:
-          fingerprints:
-            - "62:b2:1a:86:b7:9f:83:91:9b:61:f8:52:66:38:78:64"
       - checkout
       - run:
           name: Set version env var
           command: |
-            $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "0.0.$($env:WORKFLOW_NUM)-ci" } else { $env:CIRCLE_TAG }
+            $TAG = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "0.0.$($env:WORKFLOW_NUM)-ci" } else { $env:CIRCLE_TAG }
           environment:
             WORKFLOW_NUM: << pipeline.number >>
       - run:
