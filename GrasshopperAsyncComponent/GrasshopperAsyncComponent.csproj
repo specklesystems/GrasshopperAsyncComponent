@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
-    <LangVersion>10</LangVersion>
     <RootNamespace>GrasshopperAsyncComponent</RootNamespace>
     <AssemblyName>GrasshopperAsyncComponent</AssemblyName>
   </PropertyGroup>
@@ -11,7 +10,7 @@
     <Description>Jankless Grasshopper Components</Description>
     <Authors>Speckle Systems</Authors>
     <Company>Speckle Systems</Company>
-    <Copyright>Copyright AEC Systems © 2020, 2021</Copyright>
+    <Copyright>Copyright AEC Systems © 2020, 2025</Copyright>
     <ProjectGuid>{114D5E49-AC13-47F7-A70E-B4289579F4E3}</ProjectGuid>
   </PropertyGroup>
   

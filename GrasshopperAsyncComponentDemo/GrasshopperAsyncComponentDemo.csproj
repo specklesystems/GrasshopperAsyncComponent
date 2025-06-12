@@ -9,6 +9,7 @@
     <RootNamespace>GrasshopperAsyncComponentDemo</RootNamespace>
     <AssemblyName>GrasshopperAsyncComponentDemo</AssemblyName>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
+    <NeutralLanguage>en</NeutralLanguage>
   </PropertyGroup>
 
   <ItemGroup>
