@@ -41,7 +41,7 @@ jobs:
       - name: build
         run: dotnet build ${{env.SOLUTION_NAME}} --configuration release --no-restore -warnaserror -p:Version=${{steps.set-version.outputs.semver}} -p:FileVersion=${{steps.set-version.outputs.fileVersion}}
           
-      - name: restore
+      - name: pack
         run: dotnet pack ${{env.SOLUTION_NAME}} --no-build -p:Version=${{steps.set-version.outputs.semver}} -p:FileVersion=${{steps.set-version.outputs.fileVersion}}
 
       - name: Push to nuget.org
