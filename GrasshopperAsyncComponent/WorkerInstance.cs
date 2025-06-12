@@ -5,12 +5,12 @@ namespace GrasshopperAsyncComponent;
 /// <summary>
 /// A class that holds the actual compute logic and encapsulates the state it needs. Every <see cref="GH_AsyncComponent"/> needs to have one.
 /// </summary>
-public abstract class WorkerInstance(GH_Component? parent, string id, CancellationToken cancellationToken)
+public abstract class WorkerInstance(GH_Component parent, string id, CancellationToken cancellationToken)
 {
     /// <summary>
     /// The parent component. Useful for passing state back to the host component.
     /// </summary>
-    public GH_Component? Parent { get; set; } = parent;
+    public GH_Component Parent { get; set; } = parent;
 
     public CancellationToken CancellationToken { get; } = cancellationToken;
 
@@ -22,7 +22,7 @@ public abstract class WorkerInstance(GH_Component? parent, string id, Cancellati
     /// <param name="id">A Unique id for the new duplicate</param>
     /// <param name="cancellationToken">A cancellationToken to be passed to the new duplicate</param>
     /// <returns></returns>
-    public abstract WorkerInstance? Duplicate(string id, CancellationToken cancellationToken);
+    public abstract WorkerInstance Duplicate(string id, CancellationToken cancellationToken);
 
     /// <summary>
     /// This method is where the actual calculation/computation/heavy lifting should be done.
