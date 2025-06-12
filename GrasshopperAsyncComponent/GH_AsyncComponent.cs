@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using Grasshopper.Kernel;
 using Timer = System.Timers.Timer;
@@ -8,7 +8,8 @@ namespace GrasshopperAsyncComponent;
 /// <summary>
 /// Inherit your component from this class to make all the async goodness available.
 /// </summary>
-public abstract class GH_AsyncComponent : GH_Component, IDisposable
+public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
+    where T : GH_Component
 {
     //List<(string, GH_RuntimeMessageLevel)> Errors;
 
@@ -24,7 +25,7 @@ public abstract class GH_AsyncComponent : GH_Component, IDisposable
 
     private int _setData;
 
-    public List<WorkerInstance> Workers { get; protected set; }
+    public List<WorkerInstance<T>> Workers { get; }
 
     private readonly List<Task> _tasks;
 
@@ -33,7 +34,7 @@ public abstract class GH_AsyncComponent : GH_Component, IDisposable
     /// <summary>
     /// Set this property inside the constructor of your derived component.
     /// </summary>
-    public WorkerInstance? BaseWorker { get; set; }
+    public WorkerInstance<T>? BaseWorker { get; set; }
 
     /// <summary>
     /// Optional: if you have opinions on how the default system task scheduler should treat your workers, set it here.
@@ -43,7 +44,7 @@ public abstract class GH_AsyncComponent : GH_Component, IDisposable
     protected GH_AsyncComponent(string name, string nickname, string description, string category, string subCategory)
         : base(name, nickname, description, category, subCategory)
     {
-        Workers = new List<WorkerInstance>();
+        Workers = new List<WorkerInstance<T>>();
         CancellationSources = new List<CancellationTokenSource>();
         _tasks = new List<Task>();
         ProgressReports = new ConcurrentDictionary<string, double>();
@@ -136,11 +137,11 @@ public abstract class GH_AsyncComponent : GH_Component, IDisposable
 
     protected override void AfterSolveInstance()
     {
-        System.Diagnostics.Debug.WriteLine("After solve instance was called " + _state + " ? " + Workers.Count);
+        Debug.WriteLine("After solve instance was called " + _state + " ? " + Workers.Count);
         // We need to start all the tasks as close as possible to each other.
         if (_state == 0 && _tasks.Count > 0 && _setData == 0)
         {
-            System.Diagnostics.Debug.WriteLine("After solve INVOKATION");
+            Debug.WriteLine("After solve INVOCATION");
             foreach (var task in _tasks)
             {
                 task.Start();
@@ -187,7 +188,7 @@ public abstract class GH_AsyncComponent : GH_Component, IDisposable
                     ? new Task(
                         () => currentWorker.DoWork(_reportProgress, _done),
                         tokenSource.Token,
-                        (TaskCreationOptions)TaskCreationOptions
+                        TaskCreationOptions.Value
                     )
                     : new Task(() => currentWorker.DoWork(_reportProgress, _done), tokenSource.Token);
 
@@ -260,6 +261,10 @@ public abstract class GH_AsyncComponent : GH_Component, IDisposable
 
             if (disposing)
             {
+                foreach (var ct in CancellationSources)
+                {
+                    ct?.Dispose();
+                }
                 _displayProgressTimer?.Dispose();
             }
         }

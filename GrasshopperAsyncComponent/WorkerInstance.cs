@@ -5,12 +5,13 @@ namespace GrasshopperAsyncComponent;
 /// <summary>
 /// A class that holds the actual compute logic and encapsulates the state it needs. Every <see cref="GH_AsyncComponent"/> needs to have one.
 /// </summary>
-public abstract class WorkerInstance(GH_Component parent, string id, CancellationToken cancellationToken)
+public abstract class WorkerInstance<T>(T parent, string id, CancellationToken cancellationToken)
+    where T : GH_Component
 {
     /// <summary>
     /// The parent component. Useful for passing state back to the host component.
     /// </summary>
-    public GH_Component Parent { get; set; } = parent;
+    public T Parent { get; set; } = parent;
 
     public CancellationToken CancellationToken { get; } = cancellationToken;
 
@@ -22,11 +23,11 @@ public abstract class WorkerInstance(GH_Component parent, string id, Cancellatio
     /// <param name="id">A Unique id for the new duplicate</param>
     /// <param name="cancellationToken">A cancellationToken to be passed to the new duplicate</param>
     /// <returns></returns>
-    public abstract WorkerInstance Duplicate(string id, CancellationToken cancellationToken);
+    public abstract WorkerInstance<T> Duplicate(string id, CancellationToken cancellationToken);
 
     /// <summary>
     /// This method is where the actual calculation/computation/heavy lifting should be done.
-    /// <b>Make sure you always check as frequently as you can if <see cref="WorkerInstance.CancellationToken"/> is cancelled. For an example, see the PrimeCalculatorWorker example.</b>
+    /// <b>Make sure you always check as frequently as you can if <see cref="WorkerInstance{T}.CancellationToken"/> is cancelled. For an example, see the PrimeCalculatorWorker example.</b>
     /// </summary>
     /// <param name="reportProgress">Call this to report progress up to the parent component.</param>
     /// <param name="done">Call this when everything is <b>done</b>. It will tell the parent component that you're ready to <see cref="SetData(IGH_DataAccess)"/>.</param>
