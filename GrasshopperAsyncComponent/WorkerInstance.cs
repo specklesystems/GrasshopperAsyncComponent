@@ -29,6 +29,11 @@ public abstract class WorkerInstance<T>(T parent, string id, CancellationToken c
     /// This method is where the actual calculation/computation/heavy lifting should be done.
     /// <b>Make sure you always check as frequently as you can if <see cref="WorkerInstance{T}.CancellationToken"/> is cancelled. For an example, see the PrimeCalculatorWorker example.</b>
     /// </summary>
+    /// <remarks>
+    /// If you don't need <see langword="async"/> function, then you can simply return <see cref="Task.CompletedTask"/>
+    /// Either way, you should be sure to handle exceptions in this function. Otherwise, they will be Unobserved!
+    /// You can call <paramref cref="done"/> on <see cref="Exception"/>s, but avoid calling it when cancellation is has been observed.
+    /// </remarks>
     /// <param name="reportProgress">Call this to report progress up to the parent component.</param>
     public abstract Task DoWork(Action<string, double> reportProgress, Action done);
 
