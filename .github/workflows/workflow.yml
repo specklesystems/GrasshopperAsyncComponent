@@ -1,0 +1,49 @@
+name: .NET Build and Publish
+
+on:
+  pull_request:
+  push:
+    tags: ["v*.*.*"]
+
+jobs:
+  build:
+    env:
+      SOLUTION_NAME: "GrasshopperAsyncComponent.sln"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.x.x
+        
+      - id: set-version
+        name: Set version to output
+        run: |
+          TAG=${{ github.ref_name }}
+          if [[ "${{ github.ref }}" != refs/tags/* ]]; then
+            TAG="v0.0.99.${{ github.run_number }}"
+          fi
+          SEMVER="${TAG#v}"
+          FILE_VERSION=$(echo "$TAG" | sed -E 's/^v([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+          FILE_VERSION="$FILE_VERSION.${{ github.run_number }}"
+
+          echo "semver=$SEMVER" >> "$GITHUB_OUTPUT"
+          echo "fileVersion=$FILE_VERSION" >> "$GITHUB_OUTPUT"
+
+          echo $SEMVER
+          echo $FILE_VERSION
+      - name: restore
+        run: dotnet restore ${{env.SOLUTION_NAME}}
+
+      - name: build
+        run: dotnet build ${{env.SOLUTION_NAME}} --configuration release --no-restore -warnaserror -p:Version=${{steps.set-version.outputs.semver}} -p:FileVersion=${{steps.set-version.outputs.fileVersion}}
+          
+      - name: pack
+        run: dotnet pack ${{env.SOLUTION_NAME}} --no-build -p:Version=${{steps.set-version.outputs.semver}} -p:FileVersion=${{steps.set-version.outputs.fileVersion}}
+
+      - name: Push to nuget.org
+        if: (github.ref_type == 'tag')
+        run: dotnet nuget push output/*.nupkg --source "https://api.nuget.org/v3/index.json" --api-key ${{secrets.CONNECTORS_NUGET_TOKEN }} --skip-duplicate

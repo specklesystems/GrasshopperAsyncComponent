@@ -1,33 +1,25 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
+  <PropertyGroup Label="Compiler Properties">
     <TargetFramework>net48</TargetFramework>
-    <LangVersion>10</LangVersion>
     <RootNamespace>GrasshopperAsyncComponent</RootNamespace>
     <AssemblyName>GrasshopperAsyncComponent</AssemblyName>
   </PropertyGroup>
-  
-  <PropertyGroup>
+
+  <PropertyGroup Label="Nugetspec Package Properties">
+    <PackageId>GrasshopperAsyncComponent</PackageId>
     <Title>Grasshopper Async Component</Title>
     <Description>Jankless Grasshopper Components</Description>
-    <Authors>Speckle Systems</Authors>
-    <Company>Speckle Systems</Company>
-    <Copyright>Copyright AEC Systems © 2020, 2021</Copyright>
+    <PackageTags>grasshopper rhino mcneel gh_component</PackageTags>
     <ProjectGuid>{114D5E49-AC13-47F7-A70E-B4289579F4E3}</ProjectGuid>
   </PropertyGroup>
-  
-  <PropertyGroup>
-    <PackageId>GrasshopperAsyncComponent</PackageId>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/specklesystems/GrasshopperAsyncComponent</PackageProjectUrl>
-    <PackageTags>grasshopper rhino mcneel gh_component</PackageTags>
 
+  <PropertyGroup Label="Nuget Package Properties">
+    <IsPackable>true</IsPackable>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
-  
-  <ItemGroup>
+
+  <ItemGroup Label="Package References">
     <PackageReference Include="Grasshopper" Version="7.4.21078.1001" IncludeAssets="compile;build" PrivateAssets="all" />
   </ItemGroup>
 
