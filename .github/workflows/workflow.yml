@@ -9,7 +9,7 @@ jobs:
   build:
     env:
       SOLUTION_NAME: "GrasshopperAsyncComponent.sln"
-      OUTPUT_PATH: "./output"
+      OUTPUT_PATH: "output"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -41,13 +41,14 @@ jobs:
         run: dotnet restore ${{env.SOLUTION_NAME}}
 
       - name: build
-        run: dotnet build ${{env.SOLUTION_NAME}} \
+        run: |
+          dotnet build ${{env.SOLUTION_NAME}} \
           --configuration release \
           --output ${{env.OUTPUT_PATH}} \
           --no-restore \
           -warnaserror \
           -p:Version=${{steps.set-version.outputs.semver}} \
-          -p:FileVersion=${{steps.set-version.outputs.fileVersion}}
+          -p:FileVersion=${{steps.set-version.outputs.fileVersion}}s
           
       - name: pack
         run: dotnet pack ${{env.SOLUTION_NAME}} --no-build -p:Version=${{steps.set-version.outputs.semver}} -p:FileVersion=${{steps.set-version.outputs.fileVersion}}
