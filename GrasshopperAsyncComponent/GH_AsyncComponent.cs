@@ -138,6 +138,11 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
 
         Debug.WriteLine("Killing");
 
+        foreach (var currentWorker in Workers)
+        {
+            currentWorker.Cancel();
+        }
+
         ResetState();
     }
 
