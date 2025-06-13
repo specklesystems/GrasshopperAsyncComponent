@@ -5,7 +5,7 @@ using Timer = System.Timers.Timer;
 
 namespace GrasshopperAsyncComponent;
 
-public sealed class Worker<T> : IDisposable
+internal sealed class Worker<T> : IDisposable
     where T : GH_Component
 {
     public required WorkerInstance<T> Instance { get; init; }
@@ -46,7 +46,7 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
     //JEDD: boolean, 1 if this class needs to set the data of the workers...
     private volatile int _setData;
 
-    public List<Worker<T>> Workers { get; }
+    private readonly List<Worker<T>> _workers;
 
     /// <summary>
     /// Set this property inside the constructor of your derived component.
@@ -61,7 +61,7 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
     protected GH_AsyncComponent(string name, string nickname, string description, string category, string subCategory)
         : base(name, nickname, description, category, subCategory)
     {
-        Workers = new List<Worker<T>>();
+        _workers = new List<Worker<T>>();
 
         ProgressReports = new ConcurrentDictionary<string, double>();
 
@@ -81,12 +81,12 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
     private void Done()
     {
         Interlocked.Increment(ref _state);
-        if (_state == Workers.Count && _setData == 0)
+        if (_state == _workers.Count && _setData == 0)
         {
             Interlocked.Exchange(ref _setData, 1);
 
             // We need to reverse the workers list to set the outputs in the same order as the inputs.
-            Workers.Reverse();
+            _workers.Reverse();
 
             Rhino.RhinoApp.InvokeOnUiThread(
                 (Action)
@@ -100,12 +100,12 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
 
     public virtual void DisplayProgress(object sender, System.Timers.ElapsedEventArgs e)
     {
-        if (Workers.Count == 0 || ProgressReports.Values.Count == 0)
+        if (_workers.Count == 0 || ProgressReports.Values.Count == 0)
         {
             return;
         }
 
-        if (Workers.Count == 1)
+        if (_workers.Count == 1)
         {
             Message = ProgressReports.Values.Last().ToString("0.00%");
         }
@@ -117,7 +117,7 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
                 total += kvp.Value;
             }
 
-            Message = (total / Workers.Count).ToString("0.00%");
+            Message = (total / _workers.Count).ToString("0.00%");
         }
 
         Rhino.RhinoApp.InvokeOnUiThread(
@@ -138,7 +138,7 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
 
         Debug.WriteLine("Killing");
 
-        foreach (var currentWorker in Workers)
+        foreach (var currentWorker in _workers)
         {
             currentWorker.Cancel();
         }
@@ -148,12 +148,12 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
 
     protected override void AfterSolveInstance()
     {
-        Debug.WriteLine("After solve instance was called " + _state + " ? " + Workers.Count);
+        Debug.WriteLine("After solve instance was called " + _state + " ? " + _workers.Count);
         // We need to start all the tasks as close as possible to each other.
-        if (_state == 0 && Workers.Count > 0 && _setData == 0)
+        if (_state == 0 && _workers.Count > 0 && _setData == 0)
         {
             Debug.WriteLine("After solve INVOCATION");
-            foreach (var worker in Workers)
+            foreach (var worker in _workers)
             {
                 worker.Task.Start();
             }
@@ -198,7 +198,7 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
             );
 
             // Add the worker to our list
-            Workers.Add(
+            _workers.Add(
                 new()
                 {
                     Instance = currentWorker,
@@ -215,10 +215,10 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
             return;
         }
 
-        if (Workers.Count > 0)
+        if (_workers.Count > 0)
         {
             Interlocked.Decrement(ref _state);
-            Workers[_state].Instance.SetData(da);
+            _workers[_state].Instance.SetData(da);
         }
 
         if (_state != 0)
@@ -226,7 +226,7 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
             return;
         }
 
-        foreach (var worker in Workers)
+        foreach (var worker in _workers)
         {
             worker?.Dispose();
         }
@@ -239,7 +239,7 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
 
     private void ResetState()
     {
-        Workers.Clear();
+        _workers.Clear();
         ProgressReports.Clear();
 
         Interlocked.Exchange(ref _state, 0);
@@ -248,7 +248,7 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
 
     public void RequestCancellation()
     {
-        foreach (var worker in Workers)
+        foreach (var worker in _workers)
         {
             worker.Cancel();
         }
@@ -274,7 +274,7 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
 
             if (disposing)
             {
-                foreach (var worker in Workers)
+                foreach (var worker in _workers)
                 {
                     worker?.Dispose();
                 }
