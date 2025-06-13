@@ -30,7 +30,7 @@ public abstract class WorkerInstance<T>(T parent, string id, CancellationToken c
     /// <b>Make sure you always check as frequently as you can if <see cref="WorkerInstance{T}.CancellationToken"/> is cancelled. For an example, see the PrimeCalculatorWorker example.</b>
     /// </summary>
     /// <param name="reportProgress">Call this to report progress up to the parent component.</param>
-    public abstract Task DoWork(Action<string, double> reportProgress, ComponentDoneCallback done);
+    public abstract Task DoWork(Action<string, double> reportProgress, Action done);
 
     /// <summary>
     /// Write your data setting logic here. <b>Do not call this function directly from this class. It will be invoked by the parent <see cref="GH_AsyncComponent{T}"/> after you've called `Done` in the <see cref="DoWork"/> function.</b>

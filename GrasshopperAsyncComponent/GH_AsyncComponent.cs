@@ -18,12 +18,13 @@ public sealed class Worker<T> : IDisposable
 
     public void Dispose()
     {
-        Task.Dispose();
+        if (Task.IsCompleted)
+        {
+            Task.Dispose();
+        }
         CancellationSource.Dispose();
     }
 }
-
-public delegate void ComponentDoneCallback();
 
 /// <summary>
 /// Inherit your component from this class to make all the async goodness available.

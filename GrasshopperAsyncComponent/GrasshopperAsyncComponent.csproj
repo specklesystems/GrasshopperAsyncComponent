@@ -20,7 +20,7 @@
   </PropertyGroup>
 
   <ItemGroup Label="Package References">
-    <PackageReference Include="Grasshopper" Version="8.9.24194.18121" IncludeAssets="compile;build" PrivateAssets="all" />
+    <PackageReference Include="Grasshopper" Version="7.4.21078.1001" IncludeAssets="compile;build" PrivateAssets="all" />
     <PackageReference Include="PolySharp" Version="1.14.1" />
   </ItemGroup>
 
