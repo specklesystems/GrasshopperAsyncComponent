@@ -4,7 +4,7 @@ using GrasshopperAsyncComponent;
 
 namespace GrasshopperAsyncComponentDemo.SampleImplementations;
 
-public class Sample_PrimeCalculatorAsyncComponent : GH_AsyncComponent
+public class Sample_PrimeCalculatorAsyncComponent : GH_AsyncComponent<Sample_PrimeCalculatorAsyncComponent>
 {
     public override Guid ComponentGuid => new Guid("22C612B0-2C57-47CE-B9FE-E10621F18933");
 
@@ -46,13 +46,13 @@ public class Sample_PrimeCalculatorAsyncComponent : GH_AsyncComponent
         );
     }
 
-    private sealed class PrimeCalculatorWorker : WorkerInstance
+    private sealed class PrimeCalculatorWorker : WorkerInstance<Sample_PrimeCalculatorAsyncComponent>
     {
         private int TheNthPrime { get; set; } = 100;
         private long ThePrime { get; set; } = -1;
 
         public PrimeCalculatorWorker(
-            GH_Component? parent,
+            Sample_PrimeCalculatorAsyncComponent parent,
             string id = "baseworker",
             CancellationToken cancellationToken = default
         )
@@ -109,8 +109,10 @@ public class Sample_PrimeCalculatorAsyncComponent : GH_AsyncComponent
             done();
         }
 
-        public override WorkerInstance Duplicate(string id, CancellationToken cancellationToken) =>
-            new PrimeCalculatorWorker(Parent, id, cancellationToken);
+        public override WorkerInstance<Sample_PrimeCalculatorAsyncComponent> Duplicate(
+            string id,
+            CancellationToken cancellationToken
+        ) => new PrimeCalculatorWorker(Parent, id, cancellationToken);
 
         public override void GetData(IGH_DataAccess da, GH_ComponentParamServer parameters)
         {

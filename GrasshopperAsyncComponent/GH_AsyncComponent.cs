@@ -21,9 +21,9 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
 
     private readonly Timer _displayProgressTimer;
 
-    private int _state;
+    private volatile int _state;
 
-    private int _setData;
+    private volatile int _setData;
 
     public List<WorkerInstance<T>> Workers { get; }
 
@@ -39,7 +39,7 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
     /// <summary>
     /// Optional: if you have opinions on how the default system task scheduler should treat your workers, set it here.
     /// </summary>
-    public TaskCreationOptions? TaskCreationOptions { get; set; }
+    public TaskCreationOptions TaskCreationOptions { get; set; } = TaskCreationOptions.None;
 
     protected GH_AsyncComponent(string name, string nickname, string description, string category, string subCategory)
         : base(name, nickname, description, category, subCategory)
@@ -183,14 +183,11 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
             // Let the worker collect data.
             currentWorker.GetData(da, Params);
 
-            var currentRun =
-                TaskCreationOptions != null
-                    ? new Task(
-                        () => currentWorker.DoWork(_reportProgress, _done),
-                        tokenSource.Token,
-                        TaskCreationOptions.Value
-                    )
-                    : new Task(() => currentWorker.DoWork(_reportProgress, _done), tokenSource.Token);
+            var currentRun = new Task(
+                () => currentWorker.DoWork(_reportProgress, _done),
+                tokenSource.Token,
+                TaskCreationOptions
+            );
 
             // Add the worker to our list
             Workers.Add(currentWorker);

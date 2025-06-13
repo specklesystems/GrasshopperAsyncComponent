@@ -3,7 +3,7 @@
 namespace GrasshopperAsyncComponent;
 
 /// <summary>
-/// A class that holds the actual compute logic and encapsulates the state it needs. Every <see cref="GH_AsyncComponent"/> needs to have one.
+/// A class that holds the actual compute logic and encapsulates the state it needs. Every <see cref="GH_AsyncComponent{T}"/> needs to have one.
 /// </summary>
 public abstract class WorkerInstance<T>(T parent, string id, CancellationToken cancellationToken)
     where T : GH_Component
@@ -34,13 +34,13 @@ public abstract class WorkerInstance<T>(T parent, string id, CancellationToken c
     public abstract void DoWork(Action<string, double> reportProgress, Action done);
 
     /// <summary>
-    /// Write your data setting logic here. <b>Do not call this function directly from this class. It will be invoked by the parent <see cref="GH_AsyncComponent"/> after you've called `Done` in the <see cref="DoWork"/> function.</b>
+    /// Write your data setting logic here. <b>Do not call this function directly from this class. It will be invoked by the parent <see cref="GH_AsyncComponent{T}"/> after you've called `Done` in the <see cref="DoWork"/> function.</b>
     /// </summary>
     /// <param name="da"></param>
     public abstract void SetData(IGH_DataAccess da);
 
     /// <summary>
-    /// Write your data collection logic here. <b>Do not call this method directly. It will be invoked by the parent <see cref="GH_AsyncComponent"/>.</b>
+    /// Write your data collection logic here. <b>Do not call this method directly. It will be invoked by the parent <see cref="GH_AsyncComponent{T}"/>.</b>
     /// </summary>
     /// <param name="da"></param>
     /// <param name="parameters"></param>
