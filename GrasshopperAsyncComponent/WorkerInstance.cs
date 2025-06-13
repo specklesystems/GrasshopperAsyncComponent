@@ -35,6 +35,7 @@ public abstract class WorkerInstance<T>(T parent, string id, CancellationToken c
     /// You can call <paramref cref="done"/> on <see cref="Exception"/>s, but avoid calling it when cancellation is has been observed.
     /// </remarks>
     /// <param name="reportProgress">Call this to report progress up to the parent component.</param>
+    /// <param name="done">Call this when everything is <b>done</b>. It will tell the parent component that you're ready to <see cref="SetData(IGH_DataAccess)"/>.</param>
     public abstract Task DoWork(Action<string, double> reportProgress, Action done);
 
     /// <summary>
