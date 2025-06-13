@@ -5,6 +5,24 @@ using Timer = System.Timers.Timer;
 
 namespace GrasshopperAsyncComponent;
 
+public sealed class Worker<T> : IDisposable
+    where T : GH_Component
+{
+    public required WorkerInstance<T> Instance { get; init; }
+
+    public required Task Task { get; init; }
+
+    public required CancellationTokenSource CancellationSource { get; init; }
+
+    public void Cancel() => CancellationSource.Cancel();
+
+    public void Dispose()
+    {
+        Task.Dispose();
+        CancellationSource.Dispose();
+    }
+}
+
 /// <summary>
 /// Inherit your component from this class to make all the async goodness available.
 /// </summary>
@@ -19,16 +37,13 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
 
     private readonly Timer _displayProgressTimer;
 
-    //JEDD: appears to be the number of workers
+    //JEDD: appears to be the number of workers that have completed
     private volatile int _state;
 
+    //JEDD: boolean, 1 if this class needs to set the data of the workers...
     private volatile int _setData;
 
-    public List<WorkerInstance<T>> Workers { get; }
-
-    private readonly List<Task> _tasks;
-
-    public List<CancellationTokenSource> CancellationSources { get; }
+    public List<Worker<T>> Workers { get; }
 
     /// <summary>
     /// Set this property inside the constructor of your derived component.
@@ -43,9 +58,8 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
     protected GH_AsyncComponent(string name, string nickname, string description, string category, string subCategory)
         : base(name, nickname, description, category, subCategory)
     {
-        Workers = new List<WorkerInstance<T>>();
-        CancellationSources = new List<CancellationTokenSource>();
-        _tasks = new List<Task>();
+        Workers = new List<Worker<T>>();
+
         ProgressReports = new ConcurrentDictionary<string, double>();
 
         _displayProgressTimer = new Timer(333) { AutoReset = false };
@@ -121,15 +135,13 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
 
         Debug.WriteLine("Killing");
 
-        foreach (var source in CancellationSources)
+        foreach (var source in Workers)
         {
             source.Cancel();
         }
 
-        CancellationSources.Clear();
         Workers.Clear();
         ProgressReports.Clear();
-        _tasks.Clear();
 
         Interlocked.Exchange(ref _state, 0);
     }
@@ -138,12 +150,12 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
     {
         Debug.WriteLine("After solve instance was called " + _state + " ? " + Workers.Count);
         // We need to start all the tasks as close as possible to each other.
-        if (_state == 0 && _tasks.Count > 0 && _setData == 0)
+        if (_state == 0 && Workers.Count > 0 && _setData == 0)
         {
             Debug.WriteLine("After solve INVOCATION");
-            foreach (var task in _tasks)
+            foreach (var worker in Workers)
             {
-                task.Start();
+                worker.Task.Start();
             }
         }
     }
@@ -170,7 +182,6 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
 
             // Add cancellation source to our bag
             var tokenSource = new CancellationTokenSource();
-            CancellationSources.Add(tokenSource);
 
             var currentWorker = BaseWorker.Duplicate($"Worker-{da.Iteration}", tokenSource.Token);
 
@@ -188,9 +199,14 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
             );
 
             // Add the worker to our list
-            Workers.Add(currentWorker);
-
-            _tasks.Add(currentRun);
+            Workers.Add(
+                new()
+                {
+                    Instance = currentWorker,
+                    Task = currentRun,
+                    CancellationSource = tokenSource,
+                }
+            );
 
             return;
         }
@@ -203,7 +219,7 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
         if (Workers.Count > 0)
         {
             Interlocked.Decrement(ref _state);
-            Workers[_state].SetData(da);
+            Workers[_state].Instance.SetData(da);
         }
 
         if (_state != 0)
@@ -211,15 +227,13 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
             return;
         }
 
-        foreach (var ct in CancellationSources)
+        foreach (var worker in Workers)
         {
-            ct?.Dispose();
+            worker?.Dispose();
         }
 
-        CancellationSources.Clear();
         Workers.Clear();
         ProgressReports.Clear();
-        _tasks.Clear();
 
         Interlocked.Exchange(ref _setData, 0);
 
@@ -229,9 +243,9 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
 
     public void RequestCancellation()
     {
-        foreach (var source in CancellationSources)
+        foreach (var worker in Workers)
         {
-            source.Cancel();
+            worker.Cancel();
         }
 
         // CancellationSources.Clear();
@@ -261,9 +275,9 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
 
             if (disposing)
             {
-                foreach (var ct in CancellationSources)
+                foreach (var worker in Workers)
                 {
-                    ct?.Dispose();
+                    worker?.Dispose();
                 }
                 _displayProgressTimer?.Dispose();
             }
