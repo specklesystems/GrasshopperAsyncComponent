@@ -19,7 +19,7 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.x.x
-        
+
       - id: set-version
         name: Set version to output
         run: |
@@ -36,7 +36,7 @@ jobs:
 
           echo $SEMVER
           echo $FILE_VERSION
-          
+
       - name: restore
         run: dotnet restore ${{env.SOLUTION_NAME}}
 
@@ -44,15 +44,14 @@ jobs:
         run: |
           dotnet build ${{env.SOLUTION_NAME}} \
           --configuration release \
-          --output ${{env.OUTPUT_PATH}} \
           --no-restore \
           -warnaserror \
           -p:Version=${{steps.set-version.outputs.semver}} \
           -p:FileVersion=${{steps.set-version.outputs.fileVersion}}
-          
+
       - name: pack
         run: dotnet pack ${{env.SOLUTION_NAME}} --no-build -p:Version=${{steps.set-version.outputs.semver}} -p:FileVersion=${{steps.set-version.outputs.fileVersion}}
 
       - name: Push to nuget.org
         if: (github.ref_type == 'tag')
-        run: dotnet nuget push ${{env.OUTPUT_PATH}}/*.nupkg --source "https://api.nuget.org/v3/index.json" --api-key ${{secrets.CONNECTORS_NUGET_TOKEN }} --skip-duplicate
+        run: dotnet nuget push **/*.nupkg --source "https://api.nuget.org/v3/index.json" --api-key ${{secrets.CONNECTORS_NUGET_TOKEN }} --skip-duplicate
