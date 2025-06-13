@@ -36,17 +36,25 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
 
     private readonly Action<string, double> _reportProgress;
 
-    public ConcurrentDictionary<string, double> ProgressReports { get; protected set; }
+    public ConcurrentDictionary<string, double> ProgressReports { get; }
 
     private readonly Timer _displayProgressTimer;
 
-    //JEDD: appears to be the number of workers that have completed
+    /// <summary>
+    /// a counter, used to count up the number of workers that have completed,
+    /// until _setData is set true, when it starts to count down the workers as their data is set.
+    /// </summary>
     private volatile int _state;
 
-    //JEDD: boolean, 1 if this class needs to set the data of the workers...
+    /// <summary>
+    /// functionally, a boolean, 1 or 0;
+    /// it will be set to 1 once all workers are ready for SetData to be called on them, then set back to 0.
+    /// </summary>
     private volatile int _setData;
 
     private readonly List<Worker<T>> _workers;
+
+    public int WorkerCount => _workers.Count;
 
     /// <summary>
     /// Set this property inside the constructor of your derived component.
