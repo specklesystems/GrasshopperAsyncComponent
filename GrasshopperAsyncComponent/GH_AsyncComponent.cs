@@ -137,15 +137,7 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
 
         Debug.WriteLine("Killing");
 
-        foreach (var source in Workers)
-        {
-            source.Cancel();
-        }
-
-        Workers.Clear();
-        ProgressReports.Clear();
-
-        Interlocked.Exchange(ref _state, 0);
+        ResetState();
     }
 
     protected override void AfterSolveInstance()
@@ -233,13 +225,19 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
             worker?.Dispose();
         }
 
-        Workers.Clear();
-        ProgressReports.Clear();
-
-        Interlocked.Exchange(ref _setData, 0);
+        ResetState();
 
         Message = "Done";
         OnDisplayExpired(true);
+    }
+
+    private void ResetState()
+    {
+        Workers.Clear();
+        ProgressReports.Clear();
+
+        Interlocked.Exchange(ref _state, 0);
+        Interlocked.Exchange(ref _setData, 0);
     }
 
     public void RequestCancellation()
@@ -249,12 +247,8 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
             worker.Cancel();
         }
 
-        Workers.Clear();
-        ProgressReports.Clear();
-
-        Interlocked.Exchange(ref _state, 0);
-        Interlocked.Exchange(ref _setData, 0);
-        Message = "Cancelling";
+        ResetState();
+        Message = "Cancelled";
         OnDisplayExpired(true);
     }
 
