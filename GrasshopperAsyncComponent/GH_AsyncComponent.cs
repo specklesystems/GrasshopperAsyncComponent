@@ -23,6 +23,8 @@ public sealed class Worker<T> : IDisposable
     }
 }
 
+public delegate void ComponentDoneCallback();
+
 /// <summary>
 /// Inherit your component from this class to make all the async goodness available.
 /// </summary>
@@ -191,8 +193,7 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
             var currentRun = new Task<Task>(
                 async () =>
                 {
-                    await currentWorker.DoWork(_reportProgress).ConfigureAwait(true);
-                    Done();
+                    await currentWorker.DoWork(_reportProgress, Done).ConfigureAwait(true);
                 },
                 tokenSource.Token,
                 TaskCreationOptions
@@ -248,13 +249,11 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
             worker.Cancel();
         }
 
-        // CancellationSources.Clear();
-        // Workers.Clear();
-        // ProgressReports.Clear();
-        // _tasks.Clear();
+        Workers.Clear();
+        ProgressReports.Clear();
 
-        // Interlocked.Exchange(ref _state, 0);
-        // Interlocked.Exchange(ref _setData, 0);
+        Interlocked.Exchange(ref _state, 0);
+        Interlocked.Exchange(ref _setData, 0);
         Message = "Cancelling";
         OnDisplayExpired(true);
     }
