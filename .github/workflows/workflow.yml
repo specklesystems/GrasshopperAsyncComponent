@@ -9,6 +9,7 @@ jobs:
   build:
     env:
       SOLUTION_NAME: "GrasshopperAsyncComponent.sln"
+      OUTPUT_PATH: "./output"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -35,15 +36,22 @@ jobs:
 
           echo $SEMVER
           echo $FILE_VERSION
+          
       - name: restore
         run: dotnet restore ${{env.SOLUTION_NAME}}
 
       - name: build
-        run: dotnet build ${{env.SOLUTION_NAME}} --configuration release --no-restore -warnaserror -p:Version=${{steps.set-version.outputs.semver}} -p:FileVersion=${{steps.set-version.outputs.fileVersion}}
+        run: dotnet build ${{env.SOLUTION_NAME}} \
+          --configuration release \
+          --output ${{env.OUTPUT_PATH}} \
+          --no-restore \
+          -warnaserror \
+          -p:Version=${{steps.set-version.outputs.semver}} \
+          -p:FileVersion=${{steps.set-version.outputs.fileVersion}}
           
       - name: pack
         run: dotnet pack ${{env.SOLUTION_NAME}} --no-build -p:Version=${{steps.set-version.outputs.semver}} -p:FileVersion=${{steps.set-version.outputs.fileVersion}}
 
       - name: Push to nuget.org
         if: (github.ref_type == 'tag')
-        run: dotnet nuget push output/*.nupkg --source "https://api.nuget.org/v3/index.json" --api-key ${{secrets.CONNECTORS_NUGET_TOKEN }} --skip-duplicate
+        run: dotnet nuget push ${{env.OUTPUT_PATH}}/*.nupkg --source "https://api.nuget.org/v3/index.json" --api-key ${{secrets.CONNECTORS_NUGET_TOKEN }} --skip-duplicate
