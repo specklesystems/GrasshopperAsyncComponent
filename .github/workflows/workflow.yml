@@ -9,7 +9,6 @@ jobs:
   build:
     env:
       SOLUTION_NAME: "GrasshopperAsyncComponent.sln"
-      OUTPUT_PATH: "output"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
