@@ -1,10 +1,10 @@
-﻿using System.Windows.Forms;
+using System.Windows.Forms;
 using Grasshopper.Kernel;
 using GrasshopperAsyncComponent;
 
 namespace GrasshopperAsyncComponentDemo.SampleImplementations;
 
-public class Sample_UselessCyclesAsyncComponent : GH_AsyncComponent
+public class Sample_UselessCyclesAsyncComponent : GH_AsyncComponent<Sample_UselessCyclesAsyncComponent>
 {
     public override Guid ComponentGuid => new Guid("DF2B93E2-052D-4BE4-BC62-90DC1F169BF6");
 
@@ -19,20 +19,33 @@ public class Sample_UselessCyclesAsyncComponent : GH_AsyncComponent
     }
 
     private sealed class UselessCyclesWorker(
-        GH_Component? parent,
+        Sample_UselessCyclesAsyncComponent parent,
         string id = "baseworker",
         CancellationToken cancellationToken = default
-    ) : WorkerInstance(parent, id, cancellationToken)
+    ) : WorkerInstance<Sample_UselessCyclesAsyncComponent>(parent, id, cancellationToken)
     {
         private int MaxIterations { get; set; } = 100;
 
-        public override void DoWork(Action<string, double> reportProgress, Action done)
+        public override Task DoWork(Action<string, double> reportProgress, Action done)
+        {
+            try
+            {
+                RunUselessCycles(reportProgress);
+                done();
+            }
+            catch (OperationCanceledException) when (CancellationToken.IsCancellationRequested)
+            {
+                //No need to call `done()` - GrasshopperAsyncComponent assumes immediate cancel,
+                //thus it has already performed clean-up actions that would normally be done on `done()`
+            }
+
+            return Task.CompletedTask;
+        }
+
+        public void RunUselessCycles(Action<string, double> reportProgress)
         {
             // Checking for cancellation
-            if (CancellationToken.IsCancellationRequested)
-            {
-                return;
-            }
+            CancellationToken.ThrowIfCancellationRequested();
 
             for (int i = 0; i <= MaxIterations; i++)
             {
@@ -45,17 +58,14 @@ public class Sample_UselessCyclesAsyncComponent : GH_AsyncComponent
                 reportProgress(Id, (i + 1) / (double)MaxIterations);
 
                 // Checking for cancellation
-                if (CancellationToken.IsCancellationRequested)
-                {
-                    return;
-                }
+                CancellationToken.ThrowIfCancellationRequested();
             }
-
-            done();
         }
 
-        public override WorkerInstance Duplicate(string id, CancellationToken cancellationToken) =>
-            new UselessCyclesWorker(Parent, id, cancellationToken);
+        public override WorkerInstance<Sample_UselessCyclesAsyncComponent> Duplicate(
+            string id,
+            CancellationToken cancellationToken
+        ) => new UselessCyclesWorker(Parent, id, cancellationToken);
 
         public override void GetData(IGH_DataAccess da, GH_ComponentParamServer parameters)
         {
