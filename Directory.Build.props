@@ -36,20 +36,12 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <!-- Ingored warnings, some aspirational but too noisy for now, some by design.  -->
     <NoWarn>
-      <!--Disabled by design-->
-      CA5399;CA1812;
       <!--XML comment-->
       CS1591;CS1573;
       <!-- Globalization rules -->
       CA1303;CA1304;CA1305;CA1307;CA1308;CA1309;CA1310;CA1311;
       <!-- Logging -->
       CA1848;CA1727;
-      <!-- Others we don't want -->
-      CA1815;CA1725;
-      <!-- Naming things is hard enough -->
-      CA1710;CA1711;CA1720;CA1724;
-      <!-- Aspirational -->
-      CA1502;CA1716;NETSDK1206;
       $(NoWarn)
     </NoWarn
     >

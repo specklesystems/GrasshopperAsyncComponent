@@ -177,7 +177,7 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
         }
     }
 
-    protected override void SolveInstance(IGH_DataAccess da)
+    protected override void SolveInstance(IGH_DataAccess DA)
     {
         //return;
         if (_state == 0)
@@ -191,10 +191,10 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
             // Add cancellation source to our bag
             var tokenSource = new CancellationTokenSource();
 
-            var currentWorker = BaseWorker.Duplicate($"Worker-{da.Iteration}", tokenSource.Token);
+            var currentWorker = BaseWorker.Duplicate($"Worker-{DA.Iteration}", tokenSource.Token);
 
             // Let the worker collect data.
-            currentWorker.GetData(da, Params);
+            currentWorker.GetData(DA, Params);
 
             var currentRun = new Task<Task>(
                 async () =>
@@ -226,7 +226,7 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
         if (_workers.Count > 0)
         {
             Interlocked.Decrement(ref _state);
-            _workers[_state].Instance.SetData(da);
+            _workers[_state].Instance.SetData(DA);
         }
 
         if (_state != 0)
