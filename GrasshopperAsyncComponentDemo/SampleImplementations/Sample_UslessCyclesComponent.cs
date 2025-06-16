@@ -1,89 +1,125 @@
-﻿using Grasshopper.Kernel;
-using System;
-using System.Threading;
 using System.Windows.Forms;
+using Grasshopper.Kernel;
 using GrasshopperAsyncComponent;
 
+namespace GrasshopperAsyncComponentDemo.SampleImplementations;
 
-namespace GrasshopperAsyncComponentDemo.SampleImplementations
+public class Sample_UselessCyclesAsyncComponent : GH_AsyncComponent<Sample_UselessCyclesAsyncComponent>
 {
-    public class Sample_UselessCyclesAsyncComponent : GH_AsyncComponent
+    public override Guid ComponentGuid => new Guid("DF2B93E2-052D-4BE4-BC62-90DC1F169BF6");
+
+    protected override System.Drawing.Bitmap Icon => Properties.Resources.logo32;
+
+    public override GH_Exposure Exposure => GH_Exposure.primary;
+
+    public Sample_UselessCyclesAsyncComponent()
+        : base("Sample Async Component", "CYCLOMATRON-X", "Spins uselessly.", "Samples", "Async")
     {
-        public override Guid ComponentGuid { get => new Guid("DF2B93E2-052D-4BE4-BC62-90DC1F169BF6"); }
+        BaseWorker = new UselessCyclesWorker(this);
+    }
 
-        protected override System.Drawing.Bitmap Icon { get => Properties.Resources.logo32; }
+    private sealed class UselessCyclesWorker(
+        Sample_UselessCyclesAsyncComponent parent,
+        string id = "baseworker",
+        CancellationToken cancellationToken = default
+    ) : WorkerInstance<Sample_UselessCyclesAsyncComponent>(parent, id, cancellationToken)
+    {
+        private int MaxIterations { get; set; } = 100;
 
-        public override GH_Exposure Exposure => GH_Exposure.primary;
-
-        public Sample_UselessCyclesAsyncComponent() : base("Sample Async Component", "CYCLOMATRON-X", "Spins uselessly.", "Samples", "Async")
+        public override Task DoWork(Action<string, double> reportProgress, Action done)
         {
-            BaseWorker = new UselessCyclesWorker();
+            try
+            {
+                RunUselessCycles(reportProgress);
+                done();
+            }
+            catch (OperationCanceledException) when (CancellationToken.IsCancellationRequested)
+            {
+                //No need to call `done()` - GrasshopperAsyncComponent assumes immediate cancel,
+                //thus it has already performed clean-up actions that would normally be done on `done()`
+            }
+
+            return Task.CompletedTask;
         }
 
-        private class UselessCyclesWorker : WorkerInstance
+        public void RunUselessCycles(Action<string, double> reportProgress)
         {
-            int MaxIterations { get; set; } = 100;
+            // Checking for cancellation
+            CancellationToken.ThrowIfCancellationRequested();
 
-            public UselessCyclesWorker() : base(null) { }
-
-            public override void DoWork(Action<string, double> ReportProgress, Action Done)
+            for (int i = 0; i <= MaxIterations; i++)
             {
-                // Checking for cancellation
-                if (CancellationToken.IsCancellationRequested) { return; }
-
-                for (int i = 0; i <= MaxIterations; i++)
+                var sw = new SpinWait();
+                for (int j = 0; j <= 100; j++)
                 {
-                    var sw = new SpinWait();
-                    for (int j = 0; j <= 100; j++)
-                        sw.SpinOnce();
-
-                    ReportProgress(Id, ((double)(i + 1) / (double)MaxIterations));
-
-                    // Checking for cancellation
-                    if (CancellationToken.IsCancellationRequested) { return; }
+                    sw.SpinOnce();
                 }
 
-                Done();
+                reportProgress(Id, (i + 1) / (double)MaxIterations);
+
+                // Checking for cancellation
+                CancellationToken.ThrowIfCancellationRequested();
             }
+        }
 
-            public override WorkerInstance Duplicate() => new UselessCyclesWorker();
+        public override WorkerInstance<Sample_UselessCyclesAsyncComponent> Duplicate(
+            string id,
+            CancellationToken cancellationToken
+        ) => new UselessCyclesWorker(Parent, id, cancellationToken);
 
-            public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
+        public override void GetData(IGH_DataAccess da, GH_ComponentParamServer parameters)
+        {
+            if (CancellationToken.IsCancellationRequested)
             {
-                if (CancellationToken.IsCancellationRequested) return;
-
-                int _maxIterations = 100;
-                DA.GetData(0, ref _maxIterations);
-                if (_maxIterations > 1000) _maxIterations = 1000;
-                if (_maxIterations < 10) _maxIterations = 10;
-
-                MaxIterations = _maxIterations;
+                return;
             }
 
-            public override void SetData(IGH_DataAccess DA)
+            int maxIterations = 100;
+            da.GetData(0, ref maxIterations);
+            if (maxIterations > 1000)
             {
-                if (CancellationToken.IsCancellationRequested) return;
-                DA.SetData(0, $"Hello world. Worker {Id} has spun for {MaxIterations} iterations.");
+                maxIterations = 1000;
             }
+
+            if (maxIterations < 10)
+            {
+                maxIterations = 10;
+            }
+
+            MaxIterations = maxIterations;
         }
 
-        protected override void RegisterInputParams(GH_InputParamManager pManager)
+        public override void SetData(IGH_DataAccess da)
         {
-            pManager.AddIntegerParameter("N", "N", "Number of spins.", GH_ParamAccess.item);
-        }
+            if (CancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
 
-        protected override void RegisterOutputParams(GH_OutputParamManager pManager)
-        {
-            pManager.AddTextParameter("Output", "O", "Nothing really interesting.", GH_ParamAccess.item);
+            da.SetData(0, $"Hello world. Worker {Id} has spun for {MaxIterations} iterations.");
         }
+    }
 
-        public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
-        {
-            base.AppendAdditionalMenuItems(menu);
-            Menu_AppendItem(menu, "Cancel", (s, e) =>
+    protected override void RegisterInputParams(GH_InputParamManager pManager)
+    {
+        pManager.AddIntegerParameter("N", "N", "Number of spins.", GH_ParamAccess.item);
+    }
+
+    protected override void RegisterOutputParams(GH_OutputParamManager pManager)
+    {
+        pManager.AddTextParameter("Output", "O", "Nothing really interesting.", GH_ParamAccess.item);
+    }
+
+    public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
+    {
+        base.AppendAdditionalMenuItems(menu);
+        Menu_AppendItem(
+            menu,
+            "Cancel",
+            (s, e) =>
             {
                 RequestCancellation();
-            });
-        }
+            }
+        );
     }
 }
