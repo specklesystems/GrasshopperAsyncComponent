@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup Label="Compiler Properties">
-    <TargetFramework>net48</TargetFramework>
+    <TargetFrameworks>net462;net48</TargetFrameworks>
     <RootNamespace>GrasshopperAsyncComponent</RootNamespace>
     <AssemblyName>GrasshopperAsyncComponent</AssemblyName>
   </PropertyGroup>
@@ -20,9 +20,17 @@
   </PropertyGroup>
 
   <ItemGroup Label="Package References">
-    <PackageReference Include="Grasshopper" Version="7.4.21078.1001" IncludeAssets="compile;build" PrivateAssets="all" />
     <PackageReference Include="PolySharp" Version="1.14.1" />
   </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net462'">
+    <PackageReference Include="Grasshopper" Version="6.28.20199.17141" IncludeAssets="compile;build" PrivateAssets="all" />
+  </ItemGroup>
+  
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net48'">
+    <PackageReference Include="Grasshopper" Version="7.4.21078.1001" IncludeAssets="compile;build" PrivateAssets="all" />
+  </ItemGroup>
+  
 
   <ItemGroup>
     <Reference Include="System.Windows.Forms" />
