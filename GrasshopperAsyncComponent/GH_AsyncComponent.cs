@@ -54,6 +54,9 @@ public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
 
     private readonly List<Worker<T>> _workers;
 
+    public IEnumerable<CancellationTokenSource> CancellationTokenSources => _workers.Select(x => x.CancellationSource);
+    public IEnumerable<WorkerInstance<T>> Workers => _workers.Select(x => x.Instance);
+
     public int WorkerCount => _workers.Count;
 
     /// <summary>
