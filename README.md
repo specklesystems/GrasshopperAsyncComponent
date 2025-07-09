@@ -1,11 +1,14 @@
 # GrasshopperAsyncComponent
 
-[![Twitter Follow](https://img.shields.io/twitter/follow/SpeckleSystems?style=social)](https://twitter.com/SpeckleSystems) [![Discourse users](https://img.shields.io/discourse/users?server=https%3A%2F%2Fdiscourse.speckle.works&style=flat-square)](https://discourse.speckle.works)
-[![Slack Invite](https://img.shields.io/badge/-slack-grey?style=flat-square&logo=slack)](https://speckle-works.slack.com/join/shared_invite/enQtNjY5Mzk2NTYxNTA4LTU4MWI5ZjdhMjFmMTIxZDIzOTAzMzRmMTZhY2QxMmM1ZjVmNzJmZGMzMDVlZmJjYWQxYWU0MWJkYmY3N2JjNGI) [![website](https://img.shields.io/badge/www-speckle.systems-royalblue?style=flat-square)](https://speckle.systems)
+[![NuGet Version](https://img.shields.io/nuget/v/GrasshopperAsyncComponent)](https://www.nuget.org/packages/GrasshopperAsyncComponent)
+[![Twitter Follow](https://img.shields.io/twitter/follow/SpeckleSystems?style=social)](https://twitter.com/SpeckleSystems)
+[![Discourse users](https://img.shields.io/discourse/users?server=https%3A%2F%2Fspeckle.community&style=flat-square)](https://speckle.community/)
+
+
 
 ## Less Janky Grasshopper Components
 
-See the [companion blog post](https://speckle.systems/blog/async-gh/) about the rationale behind this approach. This repo demonstrates how to create an eager and responsive async component that does not block the Grasshopper UI thread while doing heavy work in the background, reports on progress and - theoretically - makes your life easier. 
+See the [companion blog post](https://v1.speckle.systems/blog/async-gh/) about the rationale behind this approach. This repo demonstrates how to create an eager and responsive async component that does not block the Grasshopper UI thread while doing heavy work in the background, reports on progress and - theoretically - makes your life easier. 
 
 We're not so sure about the last part! We've put this repo out in the hope that others will find something useful inside - even just inspiration for the approach.
 
@@ -17,13 +20,13 @@ Looks nice, doesn't it? Notice that the solution runs "eagerly" - every time the
 - **There's progress reporting!** (personally I hate waiting for Gh to unfreeze...).
 - **Thread safe**: 99% of the times this won't explode in your face. It still might though!
 
-### Approach
+## Approach
 
-Provides an abstract `GH_AsyncComponent` which you can inherit from to scaffold your own async component. There's more info in the [blogpost](https://speckle.systems/blog/async-gh/) on how to go about it.
+Provides an abstract `GH_AsyncComponent` which you can inherit from to scaffold your own async component. There's more info in the [blogpost](https://v1.speckle.systems/blog/async-gh/) on how to go about it.
 
 > #### Checkout the sample implementation! 
-> - [Prime number calculator](https://github.com/specklesystems/GrasshopperAsyncComponent/blob/a53cef31a8750a18d06fad0f41b2dc452fdc253b/GrasshopperAsyncComponentDemo/SampleImplementations/Sample_PrimeCalculatorAsyncComponent.cs#L11-L53) Calculates the n'th prime. Can actually spin your computer's fans quite a bit for numbers > 100.000!
-> - [Usless spinner](https://github.com/specklesystems/GrasshopperAsyncComponent/blob/2f2be53bffd2402337ba40d65bb5b619d1161b3e/GrasshopperAsyncComponentDemo/SampleImplementations/Sample_UslessCyclesComponent.cs#L13-L91) does no meaningfull CPU work, just keeps a thread busy with SpinWait().
+> - [Prime number calculator](https://github.com/specklesystems/GrasshopperAsyncComponent/blob/main/GrasshopperAsyncComponentDemo/SampleImplementations/Sample_PrimeCalculatorAsyncComponent.cs) Calculates the n'th prime. Can actually spin your computer's fans quite a bit for numbers > 100.000!
+> - [Usless spinner](https://github.com/specklesystems/GrasshopperAsyncComponent/blob/main/GrasshopperAsyncComponentDemo/SampleImplementations/Sample_UslessCyclesComponent.cs) does no meaningfull CPU work, just keeps a thread busy with SpinWait().
 
 ### Current limitations
 
@@ -39,9 +42,9 @@ Other limitations:
 
 - This approach is most efficient if you can batch together as many iterations as possible. Ideally you'd work with trees straight away. 
 
-- Task cancellation is up to the developer: this approach won't be too well suited for components calling code from other libraries that you don't, or can't, manage. 
+- Cancellation and Error handling is up to the developer: this approach won't be too well suited for components calling code from other libraries that you don't, or can't, manage. 
 
-### FAQ
+## FAQ
 
 Q: Does this component use all my cores? A: OH YES. It goes WROOOM.
 
@@ -64,9 +67,10 @@ A: Yes, now you can! In your component, just add a right click menu action like 
 
 ```
 
+Note: The `GrasshopperAsyncComponent` assumes immediate cancel, so it's important that your DoWork functions regularly observe the CancellationToken
+You should also avoid calling `done()` after observing a cancellation request.
 
-
-### Debugging
+## Debugging
 
 Quite easy:
 - Clone this repository and open up the solution in Visual Studio. 
@@ -74,13 +78,61 @@ Quite easy:
 - You should see a new component popping up under "Samples > Async" in the ribbon. 
 - A simple 
 
+
+## Migration from 1.2.x -> 2.0.x
+
+With the 2.0 release of the GrasshopperAsyncComponent there was a couple of breaking changes.
+With the introduction of generic args to the `WorkerInstance` class, the need to cast the `Parent` property is avoided, since it's typed correctly
+
+### Before
+```csharp
+public class MyGrasshopperComponent : GH_AsyncComponent
+
+  public MyGrasshopperComponent()
+    : base("etc..", "etc..", "etc..", "etc..", "etc..")
+  {
+    BaseWorker = new MyWorker(this);
+  }
+}
+
+//MyWorker doesn't know what type of component it's parent is,
+// if it needs to use it, it would have to cast and assume...
+public class MyWorker : WorkerInstance
+
+  public MyWorker(GH_Component parent)
+    : base(parent) { }
+}
+```
+### After
+```csharp
+public class MyGrasshopperComponent : GH_AsyncComponent<MyGrasshopperComponent>
+
+  public MyGrasshopperComponent()
+    : base("etc..", "etc..", "etc..", "etc..", "etc..")
+  {
+    BaseWorker = new MyWorker(this);
+  }
+}
+
+//Thanks to the generic arg, MyWorker now knows what type it's parent is!
+// we get compile time assurace that we're doing this correct!
+public class MyWorker : WorkerInstance<MyGrasshopperComponent>
+{
+  //There's also another change here, we're expclitiy passing in an the id and cancellation token...
+  //Previously these were being set after construction automatically by the GH_AsyncComponent class
+  //Setting the id via constructor gives us better nullability safty, as we can be true to the nullability syntax.
+  public MyWorker(MyGrasshopperComponent parent, string id = "baseWorker", cancellationToken = default) 
+    : base(parent, id, cancellationToken) { }
+}
+```
+
 ## Contributing
 
 Please make sure you read the [contribution guidelines](.github/CONTRIBUTING.md) and [Code of Conduct](.github/CODE_OF_CONDUCT.md) for an overview of the best practices we try to follow.
 
 ## Community
 
-The Speckle Community hangs out on [the forum](https://discourse.speckle.works), do join and introduce yourself & feel free to ask us questions!
+The Speckle Community hangs out on [the forum](https://speckle.community/), do join and introduce yourself & feel free to ask us questions!
 
 ## Security
 
