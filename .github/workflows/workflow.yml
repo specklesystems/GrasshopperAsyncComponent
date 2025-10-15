@@ -9,9 +9,10 @@ jobs:
   build:
     env:
       SOLUTION_NAME: "GrasshopperAsyncComponent.sln"
+      ENVIRONMENT_NAME: ${{ github.ref_type == 'tag' && 'nuget.org' || '' }}
     runs-on: ubuntu-latest
-    environment:
-      name: 'nuget.org'
+    # 👇 Conditionally assign environment (empty string = no environment)
+    environment: ${{ env.ENVIRONMENT_NAME }}
     permissions:
       id-token: write  # enable GitHub OIDC token issuance for this job
     steps:
