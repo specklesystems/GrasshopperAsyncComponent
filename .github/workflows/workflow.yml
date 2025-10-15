@@ -9,7 +9,12 @@ jobs:
   build:
     env:
       SOLUTION_NAME: "GrasshopperAsyncComponent.sln"
+      ENVIRONMENT_NAME: ${{ github.ref_type == 'tag' && 'nuget.org' || '' }}
     runs-on: ubuntu-latest
+    # 👇 Conditionally assign environment (empty string = no environment)
+    environment: ${{ env.ENVIRONMENT_NAME }}
+    permissions:
+      id-token: write  # enable GitHub OIDC token issuance for this job
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -51,6 +56,13 @@ jobs:
       - name: pack
         run: dotnet pack ${{env.SOLUTION_NAME}} --no-build -p:Version=${{steps.set-version.outputs.semver}} -p:FileVersion=${{steps.set-version.outputs.fileVersion}}
 
+      - name: NuGet login (OIDC → temp API key)
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: ${{ secrets.NUGET_USER }}
+          
       - name: Push to nuget.org
         if: (github.ref_type == 'tag')
-        run: dotnet nuget push **/*.nupkg --source "https://api.nuget.org/v3/index.json" --api-key ${{secrets.CONNECTORS_NUGET_TOKEN }} --skip-duplicate
+        run: dotnet nuget push **/*.nupkg --source "https://api.nuget.org/v3/index.json" --api-key ${{steps.login.outputs.NUGET_API_KEY}}
+
