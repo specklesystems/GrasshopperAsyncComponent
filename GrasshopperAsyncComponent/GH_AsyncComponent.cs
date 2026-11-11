@@ -6,291 +6,291 @@ using Timer = System.Timers.Timer;
 namespace GrasshopperAsyncComponent;
 
 internal sealed class Worker<T> : IDisposable
-    where T : GH_Component
+  where T : GH_Component
 {
-    public required WorkerInstance<T> Instance { get; init; }
+  public required WorkerInstance<T> Instance { get; init; }
 
-    public required Task Task { get; init; }
+  public required Task Task { get; init; }
 
-    public required CancellationTokenSource CancellationSource { get; init; }
+  public required CancellationTokenSource CancellationSource { get; init; }
 
-    public void Cancel() => CancellationSource.Cancel();
+  public void Cancel() => CancellationSource.Cancel();
 
-    public void Dispose()
+  public void Dispose()
+  {
+    if (Task.IsCompleted)
     {
-        if (Task.IsCompleted)
-        {
-            Task.Dispose();
-        }
-        CancellationSource.Dispose();
+      Task.Dispose();
     }
+    CancellationSource.Dispose();
+  }
 }
 
 /// <summary>
 /// Inherit your component from this class to make all the async goodness available.
 /// </summary>
 public abstract class GH_AsyncComponent<T> : GH_Component, IDisposable
-    where T : GH_Component
+  where T : GH_Component
 {
-    //List<(string, GH_RuntimeMessageLevel)> Errors;
+  //List<(string, GH_RuntimeMessageLevel)> Errors;
 
-    private readonly Action<string, double> _reportProgress;
+  private readonly Action<string, double> _reportProgress;
 
-    public ConcurrentDictionary<string, double> ProgressReports { get; }
+  public ConcurrentDictionary<string, double> ProgressReports { get; }
 
-    private readonly Timer _displayProgressTimer;
+  private readonly Timer _displayProgressTimer;
 
-    /// <summary>
-    /// a counter, used to count up the number of workers that have completed,
-    /// until _setData is set true, when it starts to count down the workers as their data is set.
-    /// </summary>
-    private volatile int _state;
+  /// <summary>
+  /// a counter, used to count up the number of workers that have completed,
+  /// until _setData is set true, when it starts to count down the workers as their data is set.
+  /// </summary>
+  private volatile int _state;
 
-    /// <summary>
-    /// functionally, a boolean, 1 or 0;
-    /// it will be set to 1 once all workers are ready for SetData to be called on them, then set back to 0.
-    /// </summary>
-    private volatile int _setData;
+  /// <summary>
+  /// functionally, a boolean, 1 or 0;
+  /// it will be set to 1 once all workers are ready for SetData to be called on them, then set back to 0.
+  /// </summary>
+  private volatile int _setData;
 
-    private readonly List<Worker<T>> _workers;
+  private readonly List<Worker<T>> _workers;
 
-    public IEnumerable<CancellationTokenSource> CancellationTokenSources => _workers.Select(x => x.CancellationSource);
-    public IEnumerable<WorkerInstance<T>> Workers => _workers.Select(x => x.Instance);
+  public IEnumerable<CancellationTokenSource> CancellationTokenSources => _workers.Select(x => x.CancellationSource);
+  public IEnumerable<WorkerInstance<T>> Workers => _workers.Select(x => x.Instance);
 
-    public int WorkerCount => _workers.Count;
+  public int WorkerCount => _workers.Count;
 
-    /// <summary>
-    /// Set this property inside the constructor of your derived component.
-    /// </summary>
-    public WorkerInstance<T>? BaseWorker { get; set; }
+  /// <summary>
+  /// Set this property inside the constructor of your derived component.
+  /// </summary>
+  public WorkerInstance<T>? BaseWorker { get; set; }
 
-    /// <summary>
-    /// Optional: if you have opinions on how the default system task scheduler should treat your workers, set it here.
-    /// </summary>
-    public TaskCreationOptions TaskCreationOptions { get; set; } = TaskCreationOptions.None;
+  /// <summary>
+  /// Optional: if you have opinions on how the default system task scheduler should treat your workers, set it here.
+  /// </summary>
+  public TaskCreationOptions TaskCreationOptions { get; set; } = TaskCreationOptions.None;
 
-    protected GH_AsyncComponent(string name, string nickname, string description, string category, string subCategory)
-        : base(name, nickname, description, category, subCategory)
+  protected GH_AsyncComponent(string name, string nickname, string description, string category, string subCategory)
+    : base(name, nickname, description, category, subCategory)
+  {
+    _workers = new List<Worker<T>>();
+
+    ProgressReports = new ConcurrentDictionary<string, double>();
+
+    _displayProgressTimer = new Timer(333) { AutoReset = false };
+    _displayProgressTimer.Elapsed += DisplayProgress;
+
+    _reportProgress = (id, value) =>
     {
-        _workers = new List<Worker<T>>();
+      ProgressReports[id] = value;
+      if (!_displayProgressTimer.Enabled)
+      {
+        _displayProgressTimer.Start();
+      }
+    };
+  }
 
-        ProgressReports = new ConcurrentDictionary<string, double>();
+  private void Done()
+  {
+    Interlocked.Increment(ref _state);
+    if (_state == _workers.Count && _setData == 0)
+    {
+      Interlocked.Exchange(ref _setData, 1);
 
-        _displayProgressTimer = new Timer(333) { AutoReset = false };
-        _displayProgressTimer.Elapsed += DisplayProgress;
+      // We need to reverse the workers list to set the outputs in the same order as the inputs.
+      _workers.Reverse();
 
-        _reportProgress = (id, value) =>
-        {
-            ProgressReports[id] = value;
-            if (!_displayProgressTimer.Enabled)
-            {
-                _displayProgressTimer.Start();
-            }
-        };
+      Rhino.RhinoApp.InvokeOnUiThread(
+        (Action)
+          delegate
+          {
+            ExpireSolution(true);
+          }
+      );
+    }
+  }
+
+  public virtual void DisplayProgress(object? sender, System.Timers.ElapsedEventArgs e)
+  {
+    if (_workers.Count == 0 || ProgressReports.Values.Count == 0)
+    {
+      return;
     }
 
-    private void Done()
+    if (_workers.Count == 1)
     {
-        Interlocked.Increment(ref _state);
-        if (_state == _workers.Count && _setData == 0)
-        {
-            Interlocked.Exchange(ref _setData, 1);
+      Message = ProgressReports.Values.Last().ToString("0.00%");
+    }
+    else
+    {
+      double total = 0;
+      foreach (var kvp in ProgressReports)
+      {
+        total += kvp.Value;
+      }
 
-            // We need to reverse the workers list to set the outputs in the same order as the inputs.
-            _workers.Reverse();
-
-            Rhino.RhinoApp.InvokeOnUiThread(
-                (Action)
-                    delegate
-                    {
-                        ExpireSolution(true);
-                    }
-            );
-        }
+      Message = (total / _workers.Count).ToString("0.00%");
     }
 
-    public virtual void DisplayProgress(object sender, System.Timers.ElapsedEventArgs e)
+    Rhino.RhinoApp.InvokeOnUiThread(
+      (Action)
+        delegate
+        {
+          OnDisplayExpired(true);
+        }
+    );
+  }
+
+  protected override void BeforeSolveInstance()
+  {
+    if (_state != 0 && _setData == 1)
     {
-        if (_workers.Count == 0 || ProgressReports.Values.Count == 0)
-        {
-            return;
-        }
-
-        if (_workers.Count == 1)
-        {
-            Message = ProgressReports.Values.Last().ToString("0.00%");
-        }
-        else
-        {
-            double total = 0;
-            foreach (var kvp in ProgressReports)
-            {
-                total += kvp.Value;
-            }
-
-            Message = (total / _workers.Count).ToString("0.00%");
-        }
-
-        Rhino.RhinoApp.InvokeOnUiThread(
-            (Action)
-                delegate
-                {
-                    OnDisplayExpired(true);
-                }
-        );
+      return;
     }
 
-    protected override void BeforeSolveInstance()
+    Debug.WriteLine("Killing");
+
+    foreach (var currentWorker in _workers)
     {
-        if (_state != 0 && _setData == 1)
-        {
-            return;
-        }
-
-        Debug.WriteLine("Killing");
-
-        foreach (var currentWorker in _workers)
-        {
-            currentWorker.Cancel();
-        }
-
-        ResetState();
+      currentWorker.Cancel();
     }
 
-    protected override void AfterSolveInstance()
+    ResetState();
+  }
+
+  protected override void AfterSolveInstance()
+  {
+    Debug.WriteLine("After solve instance was called " + _state + " ? " + _workers.Count);
+    // We need to start all the tasks as close as possible to each other.
+    if (_state == 0 && _workers.Count > 0 && _setData == 0)
     {
-        Debug.WriteLine("After solve instance was called " + _state + " ? " + _workers.Count);
-        // We need to start all the tasks as close as possible to each other.
-        if (_state == 0 && _workers.Count > 0 && _setData == 0)
+      Debug.WriteLine("After solve INVOCATION");
+      foreach (var worker in _workers)
+      {
+        worker.Task.Start();
+      }
+    }
+  }
+
+  protected override void ExpireDownStreamObjects()
+  {
+    // Prevents the flash of null data until the new solution is ready
+    if (_setData == 1)
+    {
+      base.ExpireDownStreamObjects();
+    }
+  }
+
+  protected override void SolveInstance(IGH_DataAccess DA)
+  {
+    //return;
+    if (_state == 0)
+    {
+      if (BaseWorker == null)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Worker class not provided.");
+        return;
+      }
+
+      // Add cancellation source to our bag
+      var tokenSource = new CancellationTokenSource();
+
+      var currentWorker = BaseWorker.Duplicate($"Worker-{DA.Iteration}", tokenSource.Token);
+
+      // Let the worker collect data.
+      currentWorker.GetData(DA, Params);
+
+      var currentRun = new Task<Task>(
+        async () =>
         {
-            Debug.WriteLine("After solve INVOCATION");
-            foreach (var worker in _workers)
-            {
-                worker.Task.Start();
-            }
+          await currentWorker.DoWork(_reportProgress, Done).ConfigureAwait(true);
+        },
+        tokenSource.Token,
+        TaskCreationOptions
+      );
+
+      // Add the worker to our list
+      _workers.Add(
+        new()
+        {
+          Instance = currentWorker,
+          Task = currentRun,
+          CancellationSource = tokenSource,
         }
+      );
+
+      return;
     }
 
-    protected override void ExpireDownStreamObjects()
+    if (_setData == 0)
     {
-        // Prevents the flash of null data until the new solution is ready
-        if (_setData == 1)
-        {
-            base.ExpireDownStreamObjects();
-        }
+      return;
     }
 
-    protected override void SolveInstance(IGH_DataAccess DA)
+    if (_workers.Count > 0)
     {
-        //return;
-        if (_state == 0)
-        {
-            if (BaseWorker == null)
-            {
-                AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Worker class not provided.");
-                return;
-            }
+      Interlocked.Decrement(ref _state);
+      _workers[_state].Instance.SetData(DA);
+    }
 
-            // Add cancellation source to our bag
-            var tokenSource = new CancellationTokenSource();
+    if (_state != 0)
+    {
+      return;
+    }
 
-            var currentWorker = BaseWorker.Duplicate($"Worker-{DA.Iteration}", tokenSource.Token);
+    foreach (var worker in _workers)
+    {
+      worker?.Dispose();
+    }
 
-            // Let the worker collect data.
-            currentWorker.GetData(DA, Params);
+    ResetState();
 
-            var currentRun = new Task<Task>(
-                async () =>
-                {
-                    await currentWorker.DoWork(_reportProgress, Done).ConfigureAwait(true);
-                },
-                tokenSource.Token,
-                TaskCreationOptions
-            );
+    Message = "Done";
+    OnDisplayExpired(true);
+  }
 
-            // Add the worker to our list
-            _workers.Add(
-                new()
-                {
-                    Instance = currentWorker,
-                    Task = currentRun,
-                    CancellationSource = tokenSource,
-                }
-            );
+  private void ResetState()
+  {
+    _workers.Clear();
+    ProgressReports.Clear();
 
-            return;
-        }
+    Interlocked.Exchange(ref _state, 0);
+    Interlocked.Exchange(ref _setData, 0);
+  }
 
-        if (_setData == 0)
-        {
-            return;
-        }
+  public void RequestCancellation()
+  {
+    foreach (var worker in _workers)
+    {
+      worker.Cancel();
+    }
 
-        if (_workers.Count > 0)
-        {
-            Interlocked.Decrement(ref _state);
-            _workers[_state].Instance.SetData(DA);
-        }
+    ResetState();
+    Message = "Cancelled";
+    OnDisplayExpired(true);
+  }
 
-        if (_state != 0)
-        {
-            return;
-        }
+  private bool _isDisposed;
 
+  public void Dispose()
+  {
+    Dispose(true);
+    GC.SuppressFinalize(this);
+  }
+
+  protected virtual void Dispose(bool disposing)
+  {
+    if (!_isDisposed)
+    {
+      _isDisposed = true;
+
+      if (disposing)
+      {
         foreach (var worker in _workers)
         {
-            worker?.Dispose();
+          worker?.Dispose();
         }
-
-        ResetState();
-
-        Message = "Done";
-        OnDisplayExpired(true);
+        _displayProgressTimer?.Dispose();
+      }
     }
-
-    private void ResetState()
-    {
-        _workers.Clear();
-        ProgressReports.Clear();
-
-        Interlocked.Exchange(ref _state, 0);
-        Interlocked.Exchange(ref _setData, 0);
-    }
-
-    public void RequestCancellation()
-    {
-        foreach (var worker in _workers)
-        {
-            worker.Cancel();
-        }
-
-        ResetState();
-        Message = "Cancelled";
-        OnDisplayExpired(true);
-    }
-
-    private bool _isDisposed;
-
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!_isDisposed)
-        {
-            _isDisposed = true;
-
-            if (disposing)
-            {
-                foreach (var worker in _workers)
-                {
-                    worker?.Dispose();
-                }
-                _displayProgressTimer?.Dispose();
-            }
-        }
-    }
+  }
 }

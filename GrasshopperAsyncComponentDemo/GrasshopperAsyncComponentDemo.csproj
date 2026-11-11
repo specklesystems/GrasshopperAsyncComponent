@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <TargetFramework>net48</TargetFramework>
+    <TargetFramework>net10.0-windows</TargetFramework>
     <Version>1.0</Version>
     <Title>GrasshopperAsyncComponentDemo</Title>
     <Description>Jankless Grasshopper Components Demo</Description>
@@ -10,23 +9,17 @@
     <AssemblyName>GrasshopperAsyncComponentDemo</AssemblyName>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
     <NeutralLanguage>en</NeutralLanguage>
+    <UseWindowsForms>true</UseWindowsForms>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Grasshopper" Version="7.4.21078.1001" IncludeAssets="compile;build" />
-    <PackageReference Include="System.Resources.Extensions" Version="7.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <PackageReference Include="Grasshopper" Version="9.0.26300.9401" IncludeAssets="compile;build" />
     <ProjectReference Include="..\GrasshopperAsyncComponent\GrasshopperAsyncComponent.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="System.Windows.Forms" />
-  </ItemGroup>
-
   <PropertyGroup Condition="$(Configuration) == 'Debug' AND $([MSBuild]::IsOSPlatform(Windows))">
-    <StartProgram>C:\Program Files\Rhino 7\System\Rhino.exe</StartProgram>
+    <StartProgram>C:\Program Files\Rhino 9\System\Rhino.exe</StartProgram>
     <StartAction>Program</StartAction>
   </PropertyGroup>
 </Project>
