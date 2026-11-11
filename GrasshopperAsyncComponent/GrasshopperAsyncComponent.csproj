@@ -3,6 +3,7 @@
     <TargetFrameworks>net462;net48;net7.0;net10.0</TargetFrameworks>
     <RootNamespace>GrasshopperAsyncComponent</RootNamespace>
     <AssemblyName>GrasshopperAsyncComponent</AssemblyName>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
 
   <PropertyGroup Label="Nugetspec Package Properties">
