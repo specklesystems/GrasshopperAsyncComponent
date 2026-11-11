@@ -39,12 +39,9 @@
       <!--XML comment-->
       CS1591;CS1573;
       <!-- Globalization rules -->
-      CA1303;CA1304;CA1305;CA1307;CA1308;CA1309;CA1310;CA1311;
-      <!-- Logging -->
-      CA1848;CA1727;
+      CA1305;
       $(NoWarn)
-    </NoWarn
-    >
+    </NoWarn>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Expose the repository root to all projects -->

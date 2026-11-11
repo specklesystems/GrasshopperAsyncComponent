@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/config/">
+    <File Path=".config/dotnet-tools.json" />
+    <File Path=".csharpierrc.yaml" />
+    <File Path=".editorconfig" />
+    <File Path="CodeMetricsConfig.txt" />
+    <File Path="Directory.Build.props" />
+    <File Path="global.json" />
+  </Folder>
+  <Project Path="GrasshopperAsyncComponent/GrasshopperAsyncComponent.csproj" />
+  <Project Path="GrasshopperAsyncComponentDemo/GrasshopperAsyncComponentDemo.csproj" />
+</Solution>
