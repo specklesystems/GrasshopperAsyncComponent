@@ -3,6 +3,7 @@ name: .NET Build and Publish
 on:
   pull_request:
   push:
+    branches: ["main"]
     tags: ["v*.*.*"]
 
 jobs:
@@ -64,7 +65,7 @@ jobs:
           --no-restore \
           -warnaserror \
           -p:Version=${{steps.set-version.outputs.semver}} \
-          -p:FileVersion=${{steps.set-version.outputs.file-version,}}
+          -p:FileVersion=${{steps.set-version.outputs.file-version}}
 
       - name: 🎁 pack
         run: dotnet pack ${{env.SOLUTION_NAME}} --no-build -p:Version=${{steps.set-version.outputs.semver}} -p:FileVersion=${{steps.set-version.outputs.file-version,}}

@@ -2,7 +2,9 @@ name: .NET Build and Publish
 
 on:
   pull_request:
-
+  push:
+    branches: ["main"]
+    
 jobs:
   lint-actions:
     name: Lint GitHub Actions
