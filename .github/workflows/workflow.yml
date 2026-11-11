@@ -68,7 +68,7 @@ jobs:
           -p:FileVersion=${{steps.set-version.outputs.file-version}}
 
       - name: 🎁 pack
-        run: dotnet pack ${{env.SOLUTION_NAME}} --no-build -p:Version=${{steps.set-version.outputs.semver}} -p:FileVersion=${{steps.set-version.outputs.file-version,}}
+        run: dotnet pack ${{env.SOLUTION_NAME}} --no-build -p:Version=${{steps.set-version.outputs.semver}} -p:FileVersion=${{steps.set-version.outputs.file-version}}
 
       - name: 🔓 NuGet login (OIDC → temp API key)
         if: (github.ref_type == 'tag')
