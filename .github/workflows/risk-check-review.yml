@@ -1,0 +1,16 @@
+name: Risk check review
+
+# A review changes the risk-check result, but a review event runs with a read-only
+# token for a PR from a fork. This workflow does nothing itself: the Risk check
+# workflow starts when it completes, with a token that can write the status.
+on:
+  pull_request_review:
+    types: [submitted, edited, dismissed]
+
+permissions: {} # this workflow needs no access
+
+jobs:
+  notify:
+    uses: specklesystems/.github/.github/workflows/risk-check-review.yml@b5bb55d90932d0912695e0d72c3e65bf7fdcdd2a
+    with:
+      runner: ubuntu-latest

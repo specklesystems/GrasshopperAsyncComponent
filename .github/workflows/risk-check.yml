@@ -1,0 +1,36 @@
+name: Risk check
+
+# Both triggers run this file from the default branch, with a token that can write
+# the status for a PR from a fork too. The job never checks out or runs code from
+# the PR. A review event cannot do this for a fork, so the Risk check review
+# workflow starts this one through workflow_run.
+on:
+  pull_request_target: # zizmor: ignore[dangerous-triggers]
+    types:
+      [
+        opened,
+        edited,
+        synchronize,
+        reopened,
+        ready_for_review,
+        labeled,
+        unlabeled,
+        closed
+      ]
+  workflow_run: # zizmor: ignore[dangerous-triggers]
+    workflows: [Risk check review]
+    types: [completed]
+
+permissions: {} # purposefully empty by default at workflow level, explicitly overridden for the job below
+
+jobs:
+  # The commit pins the workflow and the script it runs, risk-check/ in
+  # specklesystems/.github. Keep the same commit in risk-check-review.yml.
+  check:
+    permissions:
+      contents: read # the floors file, from the default branch and from the head of the pull request
+      pull-requests: write # the risk labels and the floor comments
+      statuses: write # the risk-check commit status
+    uses: specklesystems/.github/.github/workflows/risk-check.yml@b5bb55d90932d0912695e0d72c3e65bf7fdcdd2a
+    with:
+      runner: ubuntu-latest
