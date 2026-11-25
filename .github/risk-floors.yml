@@ -1,0 +1,24 @@
+# Minimum colors for the risk check (risk-check/ in specklesystems/.github). A
+# changed file that matches a path here gets at least that color, plus one
+# comment that someone answers like an approver finding. Paths match from the
+# repo root: "*" stays inside one directory, "**" spans any number of them.
+# Everything under .github/ is red whatever this file says. A pull request that
+# leaves this file unreadable fails the risk check.
+yellow:
+  # Agent configuration
+  - '**/AGENTS.md'
+  - '**/CLAUDE.md'
+  - agents/**
+  - '**/.agents/**'
+  - '**/.claude/**'
+  - '**/.codex/**'
+  - '**/.omp/**'
+  # Betterleaks exceptions
+  - '**/.betterleaks.toml'
+  - '**/.betterleaksignore'
+  - '**/.gitleaksignore'
+red:
+  - .github/**
+# Machine accounts with write access: their color reviews and approvals never count.
+bots:
+  - SpeckleDevBot

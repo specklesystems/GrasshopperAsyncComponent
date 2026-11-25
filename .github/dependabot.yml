@@ -1,0 +1,18 @@
+version: 2
+updates:
+  # Pin updates of the shared workflows in specklesystems/.github, in one pull
+  # request per new tag there, after the cooldown that only speckle-next skips.
+  # Dependabot security updates are off in this repo, so `allow` keeps this
+  # entry to those pins (ADR-0002 amendment of 2026-11-24).
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: daily
+    allow:
+      - dependency-name: specklesystems/.github/*
+    groups:
+      dot-github:
+        patterns:
+          - specklesystems/.github/*
+    cooldown:
+      default-days: 7
