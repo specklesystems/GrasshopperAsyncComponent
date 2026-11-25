@@ -17,6 +17,11 @@ yellow:
   - '**/.betterleaks.toml'
   - '**/.betterleaksignore'
   - '**/.gitleaksignore'
+  # Release: the tag build that publishes to nuget.org runs these tools and
+  # this MSBuild configuration
+  - .config/dotnet-tools.json
+  - Directory.Build.props
+  - '**/*.csproj'
 red:
   - .github/**
 # Machine accounts with write access: their color reviews and approvals never count.

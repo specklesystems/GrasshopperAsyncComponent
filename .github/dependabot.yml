@@ -1,9 +1,12 @@
 version: 2
 updates:
-  # Pin updates of the shared workflows in specklesystems/.github, in one pull
-  # request per new tag there, after the cooldown that only speckle-next skips.
+  # Pin updates of the shared workflows in specklesystems/.github, one pull
+  # request per new tag there, with no cooldown. Another repo of the org takes
+  # a new pin first; this repo merges its update after the changed workflows
+  # worked there.
   # Dependabot security updates are off in this repo, so `allow` keeps this
-  # entry to those pins (ADR-0002 amendment of 2026-11-24).
+  # entry to those pins. The cooldown block then covers nothing; zizmor's
+  # dependabot-cooldown audit asks for it.
   - package-ecosystem: github-actions
     directory: /
     schedule:
@@ -16,3 +19,5 @@ updates:
           - specklesystems/.github/*
     cooldown:
       default-days: 7
+      exclude:
+        - specklesystems/.github/*
