@@ -11,6 +11,6 @@ permissions: {} # this workflow needs no access
 
 jobs:
   notify:
-    uses: specklesystems/.github/.github/workflows/risk-check-review.yml@66d430717e64097cc5278dc390e3472d14212cf6
+    uses: specklesystems/.github/.github/workflows/risk-check-review.yml@b5bb55d90932d0912695e0d72c3e65bf7fdcdd2a
     with:
       runner: ubuntu-latest
