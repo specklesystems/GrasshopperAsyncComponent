@@ -24,13 +24,13 @@ on:
 permissions: {} # purposefully empty by default at workflow level, explicitly overridden for the job below
 
 jobs:
-  # The commit pins the workflow and the script it runs, risk-check/ in
-  # specklesystems/.github. Keep the same commit in risk-check-review.yml.
+  # `@main`, not a commit: specklesystems/.github reviews every change to main,
+  # and callers take no pin updates (atlas change-gate rollout ADR-0004).
   check:
     permissions:
       contents: read # the floors file, from the default branch and from the head of the pull request
       pull-requests: write # the risk labels and the floor comments
       statuses: write # the risk-check commit status
-    uses: specklesystems/.github/.github/workflows/risk-check.yml@b5bb55d90932d0912695e0d72c3e65bf7fdcdd2a
+    uses: specklesystems/.github/.github/workflows/risk-check.yml@main
     with:
       runner: ubuntu-latest

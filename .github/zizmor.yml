@@ -1,0 +1,8 @@
+rules:
+  unpinned-uses:
+    config:
+      policies:
+        # Callers run the shared workflows from main of specklesystems/.github,
+        # whose ruleset reviews every change (atlas change-gate rollout ADR-0004).
+        specklesystems/.github/*: ref-pin
+        "*": hash-pin
